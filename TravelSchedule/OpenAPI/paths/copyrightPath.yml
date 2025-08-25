@@ -1,0 +1,34 @@
+paths:
+  /v3.0/copyright:
+    get:
+      tags:
+      - copyright
+      summary: Данные о баннерах Яндекс Расписаний
+      operationId: getCopyrightSummary
+      parameters:
+
+      - name: apikey
+        in: query
+        description: API key
+        required: true
+        schema:
+          type: string
+
+      - name: format
+        in: query
+        description: json или xml
+        required: false
+        schema:
+          type: string
+          example: json
+          enum:
+            - json
+            - xml
+
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '../components.yml#/components/schemas/Copyright'

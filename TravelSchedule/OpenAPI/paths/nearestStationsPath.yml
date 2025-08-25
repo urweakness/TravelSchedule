@@ -1,0 +1,58 @@
+paths:
+  /v3.0/nearest_stations/:
+    get:
+      tags:
+      - nearestStations
+      summary: Список ближайших станций
+      operationId: getNearestStations
+      parameters:
+
+      - name: apikey
+        in: query
+        description: API key
+        required: true
+        schema:
+          type: string
+
+      - name: lat
+        in: query
+        description: широта
+        required: true
+        schema:
+          type: number
+
+      - name: lng
+        in: query
+        description: долгота
+        required: true
+        schema:
+          type: number
+
+      - name: distance
+        in: query
+        description: радиус охвата
+        required: true
+        schema:
+          type: integer
+
+      - name: format
+        in: query
+        description: json или xml
+        required: false
+        schema:
+          type: string
+
+      - name: lang
+        in: query
+        description: lang
+        required: false
+        schema:
+          type: string
+
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '../components.yml#/components/schemas/Stations'

@@ -1,0 +1,102 @@
+paths:
+  /3.0/schedule:
+    get:
+      tags:
+      - scheduleByStation
+      summary: Расписание рейсов по станции
+      operationId: getScheduleByStation
+      parameters:
+
+      - name: apikey
+        in: query
+        description: API Key
+        required: true
+        schema:
+          type: string
+
+      - name: station
+        in: query
+        description: Код станции. Должен быть указан в системе кодирования
+        required: true
+        schema:
+          $ref: '../components.yml#/components/schemas/AllCodingSystems'
+
+      - name: lang
+        in: query
+        description:
+          Response language
+        required: false
+        schema:
+          type: string
+
+      - name: format
+        in: query
+        description:
+          Response format (json(default)/xml)
+        required: false
+        schema:
+          type: string
+          enum:
+            - json
+            - xml
+
+      - name: date
+        in: query
+        description:
+          Request date (YYYY-MM-DD)
+        required: false
+        schema:
+          type: string
+
+      - name: transport_types
+        in: query
+        required: false
+        schema:
+          $ref: '../components.yml#/components/schemas/TransportType'
+
+      - name: direction
+        in: query
+        description:
+          Код направления, по которому необходимо получить список рейсов электричек по станции
+        required: false
+        schema:
+          type: string
+
+      - name: event
+        in: query
+        description:
+          Событие, для которого нужно отфильтровать нитки в расписании
+        required: false
+        schema:
+          type: string
+          example: departure
+          enum:
+            - departure
+            - arrival
+
+      - name: system
+        in: query
+        required: false
+        schema:
+          $ref: '../components.yml#/components/schemas/CodingSystem'
+
+      - name: show_systems
+        in: query
+        required: false
+        schema:
+          $ref: '../components.yml#/components/schemas/SearchResultsCodingSystem'
+
+      - name: result_timezone
+        in: query
+        description: Часовой пояс, для которого следует указывать даты и времена в ответе. Если параметр не передан, каждая дата и время в ответе будут указаны в часовом поясе соответствующей станции
+        required: false
+        schema:
+          type: string
+
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+               $ref: '../components.yml#/components/schemas/ScheduleByStation'

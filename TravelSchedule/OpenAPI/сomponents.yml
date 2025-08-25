@@ -1,0 +1,791 @@
+components:
+  schemas:
+
+    ScheduleDirection:
+      type: object
+      description:
+        Код и название запрошенного направления рейсов
+      parameters:
+
+        code:
+          type: string
+          description:
+            Код направления
+
+        title:
+          type: string
+          description:
+              Название направления
+
+    Directions:
+      type: object
+      description:
+        Коды и названия возможных направлений движения электричек по станции
+      parameters:
+
+        code:
+          type: string
+          description:
+            Код направления
+
+        title:
+          type: string
+          description:
+            Название направления (расшифровка кода) в свободной форме. Если значение элемента code не является одним из идентификаторов, то название и код направления обычно совпадают (например, «на Москву»)
+
+    Schedule:
+      type: object
+      description:
+
+      parameters:
+        except_days:
+          type: string
+          description:
+            Дни, в которые нитка не курсирует (даже если они входят в множество, описанное элементом days)
+        arrival:
+          type: string
+          description:
+            Время прибытия, в формате ISO 8601 (YYYY-MM-DDThh:mm:ss±hh:mm
+
+        thread:
+          $ref: '#/components/schemas/Thread'
+
+        is_fuzzy:
+          type: boolean
+          description:
+            Признак неточности времени отправления и времени прибытия
+
+        days:
+          type: string
+          description:
+            Дни курсирования нитки
+
+        stops:
+          $ref: '#/components/schemas/Stops'
+
+        departure:
+          type: string
+          description:
+            Время отправления, в формате ISO 8601 (YYYY-MM-DDThh:mm:ss±hh:mm)
+
+        terminal:
+          type: string
+          description:
+            Терминал аэропорта (например, «D»)
+
+        platform:
+          type: string
+          description:
+            Платформа или путь, с которого отправляется рейс (например, «3 путь»)
+
+    ScheduleByStation:
+      type: object
+      description:
+        Расписание рейсов по станции
+      parameters:
+
+        date:
+          type: string
+          description:
+
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+        station:
+          $ref: '#/components/schemas/Station'
+
+        schedule:
+          type: array
+          item:
+            $ref: '#/components/schemas/Schedule'
+
+        schedule_direction:
+          $ref: '#/components/schemas/ScheduleDirection'
+
+        directions:
+          $ref: '#/components/schemas/Directions'
+
+    SearchResultsCodingSystem:
+      type: string
+      description:
+        Система кодирования, коды которой следует добавить к описанию станций в результатах поиска (элемент codes, вложенный в элементы from и to)
+      example: yandex
+      enum:
+        - yandex
+        - esr
+
+    TransportType:
+      type: string
+      description: Тип транспорта
+      example: plane
+      enum:
+        - plane
+        - train
+        - suburban
+        - bus
+        - water
+        - helicopter
+
+    AllCodingSystems:
+      type: string
+      description:
+        Системы кодирования
+      example: yandex
+      enum:
+        - yandex
+        - iata
+        - icao
+        - sirena
+        - ecp
+        - express_3
+
+    CodingSystem:
+      type: string
+      description:
+        Система кодирования, в которой указывается код станции отправления и код станции прибытия (параметры from, to) в запросе
+      example: yandex
+      enum:
+        - yandex
+        - iata
+        - sirena
+        - express
+        - esr
+
+    Copyright:
+      type: object
+      description:
+        Данные о баннерах Яндекс Расписаний
+      properties:
+
+        logo_vm:
+          type: string
+          description: Вертикальный монохромный баннер
+
+        url:
+          type: string
+          description: URL Яндекс Расписаний
+
+        logo_vd:
+            type: string
+            description: Вертикальный черно-белый баннер
+
+        logo_hy:
+            type: string
+            description: Горизонтальный цветной баннер
+
+        logo_hd:
+            type: string
+            description: Горизонтальный черно-белый баннер
+
+        logo_vy:
+            type: string
+            description: Вертикальный цветной баннер
+
+        text:
+            type: string
+            description: Уведомительный текст
+
+        logo_hm:
+            type: string
+            description: Горизонтальный монохромный баннер
+
+    Stations:
+      type: object
+      properties:
+
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
+
+    SBSSearch:
+      type: object
+      description:
+        Список рейсов с информацией по каждому рейсу
+      properties:
+
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+        interval_segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntervalSegments'
+
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segments'
+
+        search:
+          $ref: '#/components/schemas/Search'
+
+    SegmentsFromTo:
+      type: object
+      description:
+        Информация о станции прибытия/отбытия рейса
+      properties:
+
+        code:
+          type: string
+          description:
+            Код станции прибытия/отбытия в системе кодирования Яндекс Расписаний
+
+        title:
+          type: string
+          description:
+            Название станции прибытия
+
+        station_type:
+          $ref: '#/components/schemas/StationType'
+
+        station_type_name:
+          type: string
+          description:
+            Название типа пункта отправления/прибытия, зависит от языка ответа. Возможные значения на русском — в списке значений ключа station_type
+
+        popular_title:
+          type: string
+          description:
+            Общепринятое название станции прибытия/отбытия
+
+        short_title:
+          type: string
+          description:
+            Короткое название станции прибытия/отбытия
+
+        transport_type:
+          $ref: '#/components/schemas/TransportType'
+
+        type:
+          $ref: '#/components/schemas/DeparturePointType'
+
+    DeparturePointType:
+      type: string
+      description:
+        Вид пункта отправления
+      example: station
+      enum:
+        - station
+        - settlement
+
+    TransportSubtype:
+      type: object
+      description:
+        Информация о подтипе транспортного средства
+      properties:
+        color:
+          type: string
+          description:
+            Основной цвет транспортного средства в шестнадцатеричном формате
+        code:
+          type: string
+          description:
+            Код подтипа транспорта для типа, указанного в элементе transport_type. Подтип может совпадать с типом (например, для обычной электрички указывается тип suburban и подтип suburban)
+          example: helicopter
+          enum:
+            - helicopter
+            - rex
+            - sputnik
+            - skiarrow
+            - shezh
+            - skirus
+            - city
+            - kalina
+            - vostok
+            - prostoryaltaya
+            - 14vag
+            - last
+            - exprdal
+            - volzhex
+            - stdplus
+            - express
+            - skor
+            - fiztekh
+            - vag6
+            - river
+            - sea
+          x-enum-descriptions:
+            helicopter: вертолет (для типа plane)
+            rex: экспресс РЭКС (для типа suburban)
+            sputnik: «Спутник» (для типа suburban)
+            skiarrow: «Лыжная стрела» (для типа suburban)
+            shezh: «Снежинка» (для типа suburban)
+            skirus: «Лыжня России» (для типа suburban)
+            city: городская электричка (для типа suburban)
+            kalina: «Калина красная» (для типа suburban)
+            vostok: «Восток» (для типа suburban)
+            prostoryaltaya: «Просторы Алтая» (для типа suburban)
+            14vag: состав из 14 вагонов (для типа suburban)
+            last: «Ласточка» (для типа suburban)
+            exprdal: экспресс с билетами на конкретные места (для типа suburban)
+            volzhex: «Волжский экспресс» (для типа suburban)
+            stdplus: электрички типа «стандарт плюс» (для типа suburban)
+            express: экспресс (для типа suburban)
+            skor: ускоренный поезд (для типа suburban)
+            fiztekh: Физтех.Электричка (для типа suburban)
+            vag6: состав из 6 вагонов (для типа suburban)
+            river: речной транспорт (для типа water)
+            sea: морской транспорт (для типа water)
+
+    StationType:
+      type: string
+      description: Тип пункта отправления
+      example: bus_stop
+      enum:
+        - station
+        - platform
+        - stop
+        - checkpoint
+        - post
+        - crossing
+        - overtaking_point
+        - train_station
+        - airport
+        - bus_station
+        - bus_stop
+        - unknown
+        - port
+        - port_point
+        - wharf
+        - river_port
+        - marine_station
+
+    Carrier:
+      type: object
+      description:
+        Информация о перевозчике
+      properties:
+
+        code:
+          type: number
+          description:
+            Код перевозчика в системе кодирования Яндекс Расписаний
+
+        contacts:
+          type: string
+          description:
+            Контактная информация, в свободной форме
+
+        url:
+          type: string
+          description:
+            Ссылка на сайт перевозчика
+
+        logo_svg:
+          type: string
+          nullable: true
+          description:
+            Ссылка на используемый Яндексом логотип перевозчика в формате SVG
+
+        title:
+          type: string
+          description:
+            Название перевозчика
+
+        phone:
+          type: string
+          description:
+            Контактный номер телефона перевозчика
+
+        codes:
+          type: object
+          description:
+            Список кодов перевозчика в других системах кодирования, поддерживаемых Яндекс Расписаниями
+          properties:
+
+            icao:
+              type: string
+              nullable: true
+              description:
+                Код перевозчика в системе кодирования ICAO
+
+            sirena:
+              type: string
+              description:
+                Код перевозчика в системе кодирования Sirena
+
+            iata:
+              type: string
+              description:
+                Код перевозчика в системе кодирования IATA
+
+        address:
+          type: string
+          description:
+            Юридический адрес перевозчика
+
+        logo:
+          type: string
+          description:
+            Ссылка на используемый Яндексом логотип перевозчика в растровом формате
+
+        email:
+          type: string
+          description:
+            Электронный почтовый адрес перевозчика
+
+    Thread:
+      type: object
+      properties:
+
+        from:
+          $ref: '#/components/schemas/SegmentsFromTo'
+
+        thread:
+          type: object
+          properties:
+
+            uid:
+              type: string
+              description: Идентификатор нитки, принятый в Яндекс Расписаниях
+              maxLength: 100
+
+            title:
+              type: string
+              description: Название нитки. Составляется из полных названий первой и последней станций следования
+
+            interval:
+              $ref: '#/components/schemas/Interval'
+
+            number:
+              type: string
+              description: Номер рейса
+
+            shortTitle:
+              type: string
+              description: Короткое название нитки. Составляется из коротких названий первой и последней станций следования
+
+            thread_method_ling:
+              type: string
+              description:
+                URL запроса информации о нитке с идентификатором, указанным в ключе uid.
+
+            carrier:
+              $ref: '#/components/schemas/Carrier'
+
+            transport_type:
+              $ref: '#/components/schemas/TransportType'
+
+            vehicle:
+              type: string
+              description: Название транспортного средства
+
+            transport_subtype:
+              $ref: '#/components/schemas/TransportSubtype'
+
+            express_type:
+              type: string
+              description: Признак экспресса или аэроэкспресса. Значение по умолчанию — null.
+              nullable: true
+              enum:
+                - express
+                - aeroexpress
+
+    Interval:
+      type: object
+      description:
+        Информация о движении по интервальной нитке
+      properties:
+
+        density:
+          type: string
+          description:
+            Описание периодичности движения в свободной форме
+
+        end_time:
+          $ref: '#/components/schemas/Time'
+
+        begin_time:
+          $ref: '#/components/schemas/Time'
+
+    Time:
+      type: string
+      description:
+            Дата и время окончания движения по нитке. Всегда указывается в часовом поясе станции отправления. YYYY-MM-DD YYYY-MM-DDTHH:MM:SS, если параметр date был передан
+
+    Segments:
+      type: object
+      description:
+        Список найденных рейсов
+      properties:
+        arrival:
+          type: string
+          description:
+            Время прибытия, в формате ISO 8601 (YYYY-MM-DDThh:mm:ss±hh:mm). Если параметр result_timezone не был передан, указывается в часовом поясе станции.
+        from:
+          $ref: '#/components/schemas/SegmentsFromTo'
+
+        thread:
+          $ref: '#/components/schemas/Thread'
+
+        departure_platform:
+          $ref: '#/components/schemas/DeparturePlatform'
+
+        stops:
+          $ref: '#/components/schemas/Stops'
+
+        departure_terminal:
+          $ref: '#/components/schemas/DepartureTerminal'
+
+        to:
+          $ref: '#/components/schemas/SegmentsFromTo'
+
+        hasTransfers:
+          $ref: '#/components/schemas/HasTransfers'
+
+        tickets_info:
+          $ref: '#/components/schemas/TicketsInfo'
+
+        duration:
+          $ref: '#/components/schemas/Duration'
+
+        arrival_terminal:
+            $ref: '#/components/schemas/ArrivalTerminal'
+
+        start_date:
+            $ref: '#/components/schemas/StartDate'
+
+        arrival_platform:
+            $ref: '#/components/schemas/ArrivalPlatform'
+
+
+    DeparturePlatform:
+      type: string
+      description:
+        Номер платформы станции отправления
+      nullable: true
+
+    Stops:
+      type: string
+      maxLength: 1000
+      description:
+        Станции следования рейса, на которых совершается остановка. Описывается в свободной форме.
+
+    DepartureTerminal:
+      type: string
+      nullable: true
+      description:
+        Название терминала станции отправления
+
+    HasTransfers:
+      type: boolean
+      description:
+        Признак наличия пересадок по ходу рейса
+
+    TicketsInfo:
+      type: object
+      description:
+        Информация о доступных типах билетов и их цене
+      properties:
+        et_marker:
+
+          type: boolean
+          description:
+            Признак возможности купить электронный билет
+
+        places:
+          type: array
+          description:
+            Доступные типы и цена билетов
+          items:
+            type: object
+            properties:
+
+              currency:
+                type: string
+                description:
+                  Идентификатор валюты, в которой указана цена
+              price:
+                type: string
+                description:
+                  Цена билета
+              name:
+                type: string
+                description:
+                  Название типа билета (например, «эконом»)
+
+    Duration:
+      type: number
+      description:
+        Продолжительность рейса (в секундах)
+
+    ArrivalTerminal:
+      type: string
+      nullable: true
+      description:
+        Название терминала станции прибытия
+
+    StartDate:
+      type: string
+      description:
+        Дата отправления рейса
+
+    ArrivalPlatform:
+      type: string
+      description:
+        Номер платформы станции прибытия
+
+    IntervalSegments:
+      type: object
+      description:
+        Список интервальных рейсов, движение по которым идет регулярно, но без определенного расписания
+      properties:
+        from:
+          $ref: '#/components/schemas/SegmentsFromTo'
+
+        thread:
+          $ref: '#/components/schemas/Thread'
+
+        departure_platform:
+          $ref: '#/components/schemas/DeparturePlatform'
+
+        stops:
+          $ref: '#/components/schemas/Stops'
+
+        departure_terminal:
+          $ref: '#/components/schemas/DepartureTerminal'
+
+        to:
+          $ref: '#/components/schemas/SegmentsFromTo'
+
+        hasTransfers:
+          $ref: '#/components/schemas/HasTransfers'
+
+        tickets_info:
+          $ref: '#/components/schemas/TicketsInfo'
+
+        duration:
+          $ref: '#/components/schemas/Duration'
+
+        arrival_terminal:
+            $ref: '#/components/schemas/ArrivalTerminal'
+
+        start_date:
+            $ref: '#/components/schemas/StartDate'
+
+        arrival_platform:
+            $ref: '#/components/schemas/ArrivalPlatform'
+
+    SearchFromTo:
+      type: object
+      description:
+        Информация об указанном в запросе пункте прибытия
+      properties:
+
+        code:
+          type: string
+          description:
+            Код пункта отправления/прибытия в системе кодирования Яндекс Расписаний
+        type:
+          $ref: '#/components/schemas/DeparturePointType'
+
+        popular_title:
+          $ref: '#/components/schemas/PopularTitle'
+
+        short_title:
+          $ref: '#/components/schemas/ShortTitle'
+
+        title:
+          $ref: '#/components/schemas/Title'
+
+    PopularTitle:
+      type: string
+      description:
+        Общепринятое название пункта отправления/прибытия
+
+    ShortTitle:
+      type: string
+      description:
+        Короткое название пункта отправления/прибытия
+
+    Title:
+      type: string
+      description:
+        Название пункта отправления/прибытия
+
+    Search:
+      type: object
+      description:
+        Указанная в запросе дата, пункт отправления и пункт прибытия
+      properties:
+
+        date:
+          type: string
+          description:
+            Дата, на которую получен список рейсов, в формате «YYYY-MM-DD
+
+        to:
+          $ref: '#/components/schemas/SearchFromTo'
+
+        from:
+          $ref: '#/components/schemas/SearchFromTo'
+
+    Pagination:
+      type: object
+      properties:
+
+        total:
+          type: integer
+
+        limit:
+          type: integer
+
+        offset:
+          type: integer
+
+    Station:
+      type: object
+      properties:
+
+        type:
+          type: string
+
+        title:
+          type: string
+
+        short_title:
+          type: string
+
+        popular_title:
+          type: string
+
+        code:
+          type: string
+
+        lat:
+          type: number
+
+        lng:
+          type: number
+
+        station_type:
+          type: string
+
+        station_type_name:
+          type: string
+
+        transport_type:
+          type: string
+
+        distance:
+          type: number
+
+        majority:
+          type: integer
+
+        type_choices:
+          $ref: '#/components/schemas/Schedule'
+
+    Schedule:
+      type: object
+      properties:
+
+        desktop_url:
+          type: string
+
+        touch_url:
+            type: string
