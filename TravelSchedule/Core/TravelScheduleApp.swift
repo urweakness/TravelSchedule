@@ -13,8 +13,3 @@ struct TravelScheduleApp: App {
         }
     }
 }
-
-#Preview {
-    CoordinatorView()
-        .environmentObject(Coordinator())
-}

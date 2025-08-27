@@ -49,3 +49,8 @@ struct MainView: View {
         )
     }
 }
+
+#Preview {
+    CoordinatorView()
+        .environmentObject(Coordinator())
+}

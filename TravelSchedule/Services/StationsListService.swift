@@ -24,14 +24,27 @@ final class StationsListService: StationsListServiceProtocol {
             )
         )
         
-        let httpBody = try response.ok.body.text_html_charset_utf_hyphen_8
-        
-        let limit = 50 * 1024 * 1024
-        let data = try await Data(collecting: httpBody, upTo: limit)
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
-        return try decoder.decode(AllStationsResponse.self, from: data)
+        switch response {
+        case .ok(let ok):
+            
+            switch ok.body {
+            case .json(let payload):
+                
+                return payload
+                
+            case .html(let body):
+                
+                var data = Data()
+                for try await chunk in body {
+                    data.append(contentsOf: chunk)
+                }
+                
+                return try JSONDecoder().decode(AllStationsResponse.self, from: data)
+                
+            }
+            
+        default:
+            throw URLError(.badServerResponse)
+        }
     }
 }

@@ -451,7 +451,10 @@ paths:
         "200":
           description: Успешный ответ
           content:
-            text/html; charset=utf-8:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllStationsResponse'
+            text/html:
               schema:
                 $ref: '#/components/schemas/AllStationsResponse'
 components:
@@ -648,7 +651,8 @@ components:
           description: Долгота станции
           
         station_type:
-          $ref: '#/components/schemas/StationType'
+          type: string
+#          $ref: '#/components/schemas/StationType'
             
         station_type_name:
           type: string
@@ -1067,101 +1071,58 @@ components:
     AllStationsResponse:
       type: object
       properties:
-      
         countries:
           type: array
           items:
             $ref: '#/components/schemas/Country'
-            
     Country:
       type: object
       properties:
-      
         title:
           type: string
           description: Название страны
-          
         codes:
           type: object
           properties:
             yandex_code:
               type: string
               description: Код страны в системе Яндекс Расписаний
-              
         regions:
           type: array
           items:
             $ref: '#/components/schemas/Region'
-            
     Region:
       type: object
       properties:
-      
         title:
           type: string
           description: Название региона
-          
         codes:
           type: object
           properties:
             yandex_code:
               type: string
               description: Код региона в системе Яндекс Расписаний
-              
         settlements:
           type: array
           items:
             $ref: '#/components/schemas/Settlement'
-            
     Settlement:
       type: object
       properties:
-      
         title:
           type: string
           description: Название населенного пункта
-          
         codes:
           type: object
           properties:
             yandex_code:
               type: string
               description: Код населенного пункта в системе Яндекс Расписаний
-              
         stations:
           type: array
           items:
-            $ref: '#/components/schemas/AllStationsStation'
-          
-    AllStationsStation:
-      type: object
-      properties:
-      
-        direction:
-          type: string
-          
-        codes:
-          type: object
-          properties:
-            esr_code:
-              type: string
-            yandex_code:
-              type: string
-              
-        station_type:
-          $ref: '#/components/schemas/StationType'
-          
-        title:
-          type: string
-          
-        transport_type:
-          $ref: '#/components/schemas/TransportType'
-          
-        latitude:
-          type: number
-          
-        longitude:
-          type: number
+            $ref: '#/components/schemas/Station'
 
     TransportType:
       type: string
