@@ -27,17 +27,14 @@ paths:
           description: Response format
           required: false
           schema:
-            type: string
-            enum:
-              - json
-              - xml
+            $ref: '#/components/schemas/Format'
       responses:
         '200':
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Copyright'
+                $ref: '#/components/schemas/CopyrightResponse'
   /v3.0/nearest_stations/:
     get:
       tags:
@@ -80,7 +77,7 @@ paths:
           description: Формат ответа (json или xml)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
         - name: station_types
           in: query
           description: Типы запрашиваемых станций (например, station, bus_station)
@@ -142,7 +139,7 @@ paths:
           description: Формат ответа, по умолчанию JSON
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
         - name: lang
           in: query
           description: Язык ответа (например, ru_RU)
@@ -222,7 +219,7 @@ paths:
           description: Формат ответа (json по умолчанию)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
         - name: date
           in: query
           description: Дата, на которую требуется расписание (формат YYYY-MM-DD)
@@ -302,7 +299,7 @@ paths:
           description: Формат ответа (json по умолчанию)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
         - name: lang
           in: query
           description: Язык возвращаемой информации (например, ru_RU)
@@ -370,7 +367,7 @@ paths:
           description: Формат ответа (json по умолчанию)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
       responses:
         "200":
           description: Успешный ответ
@@ -414,14 +411,17 @@ paths:
           description: Формат ответа (json по умолчанию)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CarrierResponse'
+                oneOf:
+                - $ref: '#/components/schemas/CarrierResponse'
+                - $ref: '#/components/schemas/IATACarrierResponse'
+                
   /v3.0/stations_list/:
     get:
       tags:
@@ -446,7 +446,7 @@ paths:
           description: Формат ответа (json по умолчанию)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/Format'
       responses:
         "200":
           description: Успешный ответ
@@ -457,17 +457,28 @@ paths:
 components:
   schemas:
   
+    Format:
+      type: string
+      enum:
+        - json
+        - xml
+    
     CodingSystem:
       type: string
       enum:
         - icao
         - sirena
         - iata
+    
+    CopyrightResponse:
+      type: object
+      properties:
+        copyright:
+          $ref: '#/components/schemas/Copyright'
   
     Copyright:
       type: object
       properties:
-
         logo_vm:
           type: string
 
@@ -542,12 +553,12 @@ components:
                     
                   begin_time:
                     type: string
-                    format: date-time
+#                    format: date-time
                     description: Время начала движения по нитке.
                     
                   end_time:
                     type: string
-                    format: date-time
+#                    format: date-time
                     description: Время окончания движения по нитке.
                     
               duration:
@@ -573,12 +584,12 @@ components:
           
         departure:
           type: string
-          format: date-time
+#          format: date-time
           description: Время отправления
           
         arrival:
           type: string
-          format: date-time
+#          format: date-time
           description: Время прибытия
           
         thread:
@@ -703,12 +714,12 @@ components:
           
         arrival:
           type: string
-          format: date-time
+#          format: date-time
           description: Время прибытия в формате ISO 8601
           
         departure:
           type: string
-          format: date-time
+#          format: date-time
           description: Время отправления в формате ISO 8601
           
         thread:
@@ -752,62 +763,75 @@ components:
           
         start_time:
           type: string
-          format: date-time
+#          format: date-time
           
         days:
           type: string
           
         interval:
           $ref: '#/components/schemas/Interval'
-          
+    
+    CarrierResponse:
+      type: object
+      properties:
+        carrier:
+          $ref: '#/components/schemas/Carrier'
+            
+    IATACarrierResponse:
+      type: object
+      properties:
+        carriers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Carrier'
+    
     Carrier:
       type: object
       properties:
-      
         code:
           type: integer
           description: Код перевозчика в системе Яндекс Расписаний
-          
+      
         contacts:
           type: string
           description: Контактная информация
-          
+      
         url:
           type: string
           description: Ссылка на сайт перевозчика
-          
+      
         title:
           type: string
           description: Название перевозчика
-          
+      
         phone:
           type: string
           description: Контактный телефон перевозчика
-          
+      
         address:
           type: string
           description: Адрес перевозчика
-          
+      
         logo:
           type: string
           description: Ссылка на логотип перевозчика
-          
+      
         email:
           type: string
           description: Электронная почта перевозчика
-          
+      
         codes:
           type: object
           properties:
-          
+      
             icao:
               type: string
               description: Код перевозчика в системе ICAO
-              
+          
             sirena:
               type: string
               description: Код перевозчика в системе Sirena
-              
+          
             iata:
               type: string
               description: Код перевозчика в системе IATA
@@ -830,11 +854,11 @@ components:
       
         arrival:
           type: string
-          format: date-time
+#          format: date-time
           
         departure:
           type: string
-          format: date-time
+#          format: date-time
           
         stop_time:
           type: integer
@@ -896,12 +920,12 @@ components:
               
             begin_time:
               type: string
-              format: date-time
+#              format: date-time
               description: Время начала
               
             end_time:
               type: string
-              format: date-time
+#              format: date-time
               description: Время окончания
               
     Directions:
@@ -922,7 +946,7 @@ components:
       
         date:
           type: string
-          format: date
+#          format: date
           description: Дата расписания
           
         pagination:
@@ -959,12 +983,12 @@ components:
           
         begin_time:
           type: string
-          format: date-time
+#          format: date-time
           description: Время начала рейсов
           
         end_time:
           type: string
-          format: date-time
+#          format: date-time
           description: Время окончания рейсов
           
     ThreadStationsResponse:
@@ -1036,15 +1060,6 @@ components:
         type:
           type: string
           description: Тип транспортного пункта (settlement или station)
-          
-    CarrierResponse:
-      type: object
-      properties:
-      
-        carriers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Carrier'
             
     AllStationsResponse:
       type: object

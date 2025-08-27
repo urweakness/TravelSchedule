@@ -1,12 +1,13 @@
 import OpenAPIURLSession
 
+typealias Format = Components.Schemas.Format
+
 final class ServicesManager {
     
     static let shared = ServicesManager()
     private init() {}
     
-    
-    func showThreadStationsService() async  {
+    func showThreadStations() async  {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             
@@ -16,7 +17,7 @@ final class ServicesManager {
             )
             
             let threadStations = try await threadStationsService.getThreadStations(
-                uid: "7303A_9600213_g13_af"
+                uid: "SU-1484_250826_c26_12"
             )
             
             print("THREAD STATIONS --> ", threadStations)
@@ -25,7 +26,7 @@ final class ServicesManager {
         }
     }
     
-    func showStationScheduleService() async {
+    func showStationSchedule() async {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             
@@ -44,7 +45,7 @@ final class ServicesManager {
         }
     }
     
-    func showServices() async {
+    func showNearestStations() async {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
@@ -53,53 +54,113 @@ final class ServicesManager {
                 client: client,
                 apiKey: apiKey
             )
-            let segmentsService = SegmentsService(
-                client: client,
-                apiKey: apiKey
-            )
-            let copyrightService = CopyrightService(
-                client: client,
-                apiKey: apiKey
-            )
-            let stationsListService = StationsListService(
-                client: client,
-                apiKey: apiKey
-            )
-            let carrierService = CarrierService(
-                client: client,
-                apiKey: apiKey
-            )
-            let nearestSettlementService = NearestSettlementService(
-                client: client,
-                apiKey: apiKey
-            )
-             
+            
             let stations = try await nearestStationsService.getNearestStations(
                 lat: 59.864177,
                 lng: 30.319163,
                 distance: 50
             )
-            let copyright = try await copyrightService.getCopyright()
+            
+            print("STATIONS --> ", stations, "\n")
+        } catch {
+            print("An error occurred --> \(error)\n")
+        }
+    }
+    
+    func showSegments() async {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let segmentsService = SegmentsService(
+                client: client,
+                apiKey: apiKey
+            )
+             
             let search = try await segmentsService.search(
                 from: "s9600213",
                 to: "c146"
             )
-            let carrierInfo = try await carrierService.getCarrierInfo(
-                code: "TK",
-                system: .iata
+            
+            print("SEARCH --> ", search, "\n")
+        } catch {
+            print("An error occurred --> \(error)\n")
+        }
+    }
+    
+    func showCopyright() async {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let copyrightService = CopyrightService(
+                client: client,
+                apiKey: apiKey
             )
+             
+            let copyright = try await copyrightService.getCopyright()
+            
+            print("COPYRIGHT --> ", copyright, "\n")
+        } catch {
+            print("An error occurred --> \(error)\n")
+        }
+    }
+    
+    func showStationsList(format: Format = .json) async {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let stationsListService = StationsListService(
+                client: client,
+                apiKey: apiKey
+            )
+            
+            let stationList = try await stationsListService.getAllStations(format: format)
+            
+            print("STATION LIST --> ", stationList, "\n")
+        } catch {
+            print("An error occurred --> \(error)\n")
+        }
+    }
+    
+    func showNearestCity() async {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let nearestSettlementService = NearestSettlementService(
+                client: client,
+                apiKey: apiKey
+            )
+            
             let nearestCity = try await nearestSettlementService.getNearestCity(
                 lat: 59.864177,
                 lng: 30.319163
             )
-            let stationList = try await stationsListService.getAllStations()
             
-            print("COPYRIGHT --> ", copyright, "\n")
-            print("SEARCH --> ", search, "\n")
-            print("STATIONS --> ", stations, "\n")
-            print("CARRIER --> ", carrierInfo, "\n")
             print("NEAREST CITY --> ", nearestCity, "\n")
-            print("STATION LIST --> ", stationList, "\n")
+        } catch {
+            print("An error occurred --> \(error)\n")
+        }
+    }
+    
+    func showCarrierInfo() async {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let carrierService = CarrierService(
+                client: client,
+                apiKey: apiKey
+            )
+
+            let carrierInfo = try await carrierService.getCarrierInfo(
+                code: "TK",
+                system: .iata
+            )
+
+            print("CARRIER --> ", carrierInfo, "\n")
         } catch {
             print("An error occurred --> \(error)\n")
         }

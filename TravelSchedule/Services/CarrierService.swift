@@ -3,9 +3,13 @@ import OpenAPIURLSession
 
 typealias CarrierResponse = Components.Schemas.CarrierResponse
 typealias CodingSystem = Components.Schemas.CodingSystem
+typealias JsonPayload = Operations.getCarrierInfo.Output.Ok.Body.jsonPayload
 
 protocol CarrierServiceProtocol {
-    func getCarrierInfo(code: String, system: CodingSystem) async throws -> CarrierResponse
+    func getCarrierInfo(
+        code: String,
+        system: CodingSystem
+    ) async throws -> JsonPayload
 }
 
 final class CarrierService: CarrierServiceProtocol {
@@ -17,7 +21,7 @@ final class CarrierService: CarrierServiceProtocol {
         self.apiKey = apiKey
     }
     
-    func getCarrierInfo(code: String, system: CodingSystem) async throws -> CarrierResponse {
+    func getCarrierInfo(code: String, system: CodingSystem) async throws -> JsonPayload {
         let response = try await client.getCarrierInfo(
             query: .init(
                 apikey: apiKey,
