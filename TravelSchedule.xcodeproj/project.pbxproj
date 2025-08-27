@@ -38,7 +38,7 @@
 		2D6E230E2E58FCBD003C03B8 /* Exceptions for "TravelSchedule" folder in "TravelSchedule" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"OpenAPI/openapi-generator-config.yml",
+				"OpenAPI/openapi-generator-config.yaml",
 			);
 			target = 2D6E21CC2E573F78003C03B8 /* TravelSchedule */;
 		};
@@ -49,7 +49,7 @@
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 2D6E21C92E573F78003C03B8 /* Sources */;
 			membershipExceptions = (
-				"OpenAPI/openapi-generator-config.yml",
+				"OpenAPI/openapi-generator-config.yaml",
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */

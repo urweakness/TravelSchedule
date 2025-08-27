@@ -89,7 +89,7 @@ paths:
           description: Тип транспортного средства (например, plane, train, bus)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/TransportType'
         - name: offset
           in: query
           description: Смещение относительно первого результата
@@ -157,7 +157,7 @@ paths:
           description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/TransportType'
         - name: offset
           in: query
           description: Смещение результатов
@@ -231,7 +231,7 @@ paths:
           description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/TransportType'
         - name: event
           in: query
           description: Событие для фильтрации (arrival/отправление)
@@ -648,26 +648,7 @@ components:
           description: Долгота станции
           
         station_type:
-          type: string
-          description: Тип станции
-          enum:
-            - station
-            - platform
-            - stop
-            - checkpoint
-            - post
-            - crossing
-            - overtaking_point
-            - train_station
-            - airport
-            - bus_station
-            - bus_stop
-            - unknown
-            - port
-            - port_point
-            - wharf
-            - river_port
-            - marine_station
+          $ref: '#/components/schemas/StationType'
             
         station_type_name:
           type: string
@@ -703,7 +684,29 @@ components:
               
         type_choices:
           $ref: '#/components/schemas/Schedule'
-          
+
+    StationType:
+      type: string
+      description: Тип станции
+      enum:
+        - station
+        - platform
+        - stop
+        - checkpoint
+        - post
+        - crossing
+        - overtaking_point
+        - train_station
+        - airport
+        - bus_station
+        - bus_stop
+        - unknown
+        - port
+        - port_point
+        - wharf
+        - river_port
+        - marine_station
+
     Schedule:
       type: object
       properties:
@@ -1128,4 +1131,44 @@ components:
         stations:
           type: array
           items:
-            $ref: '#/components/schemas/Station'
+            $ref: '#/components/schemas/AllStationsStation'
+          
+    AllStationsStation:
+      type: object
+      properties:
+      
+        direction:
+          type: string
+          
+        codes:
+          type: object
+          properties:
+            esr_code:
+              type: string
+            yandex_code:
+              type: string
+              
+        station_type:
+          $ref: '#/components/schemas/StationType'
+          
+        title:
+          type: string
+          
+        transport_type:
+          $ref: '#/components/schemas/TransportType'
+          
+        latitude:
+          type: number
+          
+        longitude:
+          type: number
+
+    TransportType:
+      type: string
+      enum:
+        - plane
+        - train
+        - suburban
+        - bus
+        - water
+        - helicopter

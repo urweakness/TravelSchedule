@@ -116,7 +116,7 @@ final class ServicesManager {
                 apiKey: apiKey
             )
             
-            let stationList = try await stationsListService.getAllStations(format: format)
+            let stationList = try await stationsListService.getAllStations()
             
             print("STATION LIST --> ", stationList, "\n")
         } catch {

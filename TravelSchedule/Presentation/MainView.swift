@@ -19,14 +19,14 @@ struct MainView: View {
         .background(.travelWhite)
         .task {
             Task {
-                await ServicesManager.shared.showCarrierInfo()
-                await ServicesManager.shared.showThreadStations()
-                await ServicesManager.shared.showCopyright()
-                await ServicesManager.shared.showStationSchedule()
+//                await ServicesManager.shared.showCarrierInfo()
+//                await ServicesManager.shared.showThreadStations()
+//                await ServicesManager.shared.showCopyright()
+//                await ServicesManager.shared.showStationSchedule()
                 
-                await ServicesManager.shared.showNearestCity()
-                await ServicesManager.shared.showNearestStations()
-                await ServicesManager.shared.showSegments()
+//                await ServicesManager.shared.showNearestCity()
+//                await ServicesManager.shared.showNearestStations()
+//                await ServicesManager.shared.showSegments()
                 await ServicesManager.shared.showStationsList()
             }
         }
