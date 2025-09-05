@@ -2,7 +2,8 @@ import SwiftUI
 
 struct RoutingView: View {
     
-    @EnvironmentObject var coordinator: Coordinator
+    @EnvironmentObject private var coordinator: Coordinator
+    @EnvironmentObject private var travelRoutingManager: TravelRoutingViewModel
     
     var body: some View {
         ViewThatFits {
@@ -24,8 +25,8 @@ struct RoutingView: View {
     
     private var fromTitle: String {
         if
-            let townName = coordinator.startTown?.name,
-            let stationName = coordinator.startStation?.name
+            let townName = travelRoutingManager.startTown?.name,
+            let stationName = travelRoutingManager.startStation?.name
         {
             "\(townName) (\(stationName))"
         } else {
@@ -35,8 +36,8 @@ struct RoutingView: View {
     
     private var toTitle: String {
         if
-            let townName = coordinator.destinationTown?.name,
-            let stationName = coordinator.destinationStation?.name
+            let townName = travelRoutingManager.destinationTown?.name,
+            let stationName = travelRoutingManager.destinationStation?.name
         {
             "\(townName) (\(stationName))"
         } else {
@@ -91,8 +92,7 @@ struct RoutingView: View {
         Button(
             action: {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    (coordinator.destinationTown, coordinator.startTown) = (coordinator.startTown, coordinator.destinationTown)
-                    (coordinator.destinationStation, coordinator.startStation) = (coordinator.startStation, coordinator.destinationStation)
+                    travelRoutingManager.swapDestinations()
                 }
             }
         ) {
@@ -108,7 +108,7 @@ struct RoutingView: View {
     }
     
     private func route(isDestination: Bool) {
-        coordinator.isDestination = isDestination
+        travelRoutingManager.isDestination = isDestination
         coordinator.push(page: .townChoose)
         coordinator.navigationTitleDisplayMode = .inline
     }

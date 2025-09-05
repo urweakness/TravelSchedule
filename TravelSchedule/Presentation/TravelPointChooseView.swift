@@ -1,13 +1,27 @@
 import SwiftUI
 
+#Preview {
+    TravelPointChooseView(travelPoints: Town.allCases)
+        .environmentObject(Coordinator())
+        .environmentObject(TravelRoutingViewModel())
+}
+
 struct TravelPointChooseView<D: TravelPoint>: View {
     
+    // MARK: - Internal Constants
     let travelPoints: [D]
+    
+    // MARK: - State Private Properties
     @State private var filteredDestinations = [D]()
     @State private var searchText: String = ""
     
     @EnvironmentObject private var coordinator: Coordinator
+    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
+    // MARK: - Private Constants
+    private let manager = ServicesManager.shared
+    
+    // MARK: - Body
     @ViewBuilder
     var body: some View {
         VStack(spacing: 16) {
@@ -29,20 +43,14 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         .customNavigationBackButton()
     }
     
+    // MARK: - Private Properties
     private var emptyDestinationsView: some View {
         GeometryReader {
             Text(D.noContentTitleText)
                 .font(.bold24)
                 .transition(.blurReplace)
-                .frame(height: $0.size.height)
+                .frame(width: $0.size.width, height: $0.size.height)
         }
-//        VStack {
-//            Spacer()
-//            Text(D.noContentTitleText)
-//                .font(.bold24)
-//                .transition(.blurReplace)
-//            Spacer()
-//        }
     }
 
     private var destinationsView: some View {
@@ -51,19 +59,19 @@ struct TravelPointChooseView<D: TravelPoint>: View {
                 TravelListCell(
                     text: destination.name,
                     buttonAction: {
-                        guard let isDestination = coordinator.isDestination else { return }
+                        guard let isDestination = travelRoutingViewModel.isDestination else { return }
                         if let town = destination as? Town {
                             if isDestination  {
-                                coordinator.destinationTown = town
+                                travelRoutingViewModel.destinationTown = town
                             } else {
-                                coordinator.startTown = town
+                                travelRoutingViewModel.startTown = town
                             }
                             coordinator.push(page: .stationChoose)
                         } else if let station = destination as? Station {
                             if isDestination {
-                                coordinator.destinationStation = station
+                                travelRoutingViewModel.destinationStation = station
                             } else {
-                                coordinator.startStation = station
+                                travelRoutingViewModel.startStation = station
                             }
                             coordinator.popToRoot()
                         }
@@ -84,6 +92,7 @@ struct TravelPointChooseView<D: TravelPoint>: View {
             }
     }
     
+    // MARK: - Private Methods
     private func setFilter() {
         withAnimation(.easeInOut(duration: 0.15)) {
             if searchText.isEmpty {

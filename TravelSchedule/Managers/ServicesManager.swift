@@ -1,11 +1,42 @@
 import OpenAPIURLSession
-
-typealias Format = Components.Schemas.Format
+import SwiftUI
 
 final class ServicesManager {
+    enum ServiceError: Error {
+        case stationListError(String)
+        case threadStationsError(String)
+        case stationScheduleError(String)
+        case nearestStationsError(String)
+        case segmentsError(String)
+        case copyrightError(String)
+        case nearestCityError(String)
+        case carrierInfoError(String)
+    }
     
     static let shared = ServicesManager()
     private init() {}
+}
+
+extension ServicesManager {
+    func getStationsList(format: Format = .json) async throws -> AllStationsResponse {
+        do {
+            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
+            let apiKey = GlobalConstants.apiKey
+            
+            let stationsListService = StationsListService(
+                client: client,
+                apiKey: apiKey
+            )
+            
+            let stationList = try await stationsListService.getAllStations()
+            
+            return stationList
+        } catch {
+            throw ServiceError.stationListError(error.localizedDescription)
+        }
+    }
+    
+    
     
     func showThreadStations() async  {
         do {
@@ -101,24 +132,6 @@ final class ServicesManager {
             let copyright = try await copyrightService.getCopyright()
             
             print("COPYRIGHT --> ", copyright, "\n")
-        } catch {
-            print("An error occurred --> \(error)\n")
-        }
-    }
-    
-    func showStationsList(format: Format = .json) async {
-        do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
-            let stationsListService = StationsListService(
-                client: client,
-                apiKey: apiKey
-            )
-            
-            let stationList = try await stationsListService.getAllStations()
-            
-            print("STATION LIST --> ", stationList, "\n")
         } catch {
             print("An error occurred --> \(error)\n")
         }

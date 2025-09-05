@@ -1,12 +1,3 @@
-import OpenAPIRuntime
-import OpenAPIURLSession
-
-typealias CopyrightResponse = Components.Schemas.CopyrightResponse
-
-protocol CopyrightServiceProtocol {
-    func getCopyright() async throws -> CopyrightResponse
-}
-
 final class CopyrightService: CopyrightServiceProtocol {
     private let client: Client
     private let apiKey: String
