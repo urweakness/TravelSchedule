@@ -1,13 +1,11 @@
 import SwiftUI
 
-struct StoryView: View {
+struct StoryPreviewView: View {
     
-    @State private(set) var attributedTitle: AttributedString
-    @State private(set) var imageResource: ImageResource
-    @State private(set) var checked: Bool
+    @State private(set) var story: StoryModel
     
     var body: some View {
-        Image(imageResource)
+        Image(story.previewImageResource)
             .overlay(alignment: .bottom) {
                 titleCover
             }
@@ -16,7 +14,7 @@ struct StoryView: View {
     }
     
     private var titleCover: some View {
-        Text(attributedTitle)
+        Text(story.title)
             .font(.regular12)
             .foregroundStyle(.white)
             .padding(.bottom, 12)
@@ -26,7 +24,7 @@ struct StoryView: View {
     
     private func border() -> some View {
         RoundedRectangle(cornerRadius: 16)
-            .stroke(checked ? .clear : .travelBlue, lineWidth: 6)
+            .stroke(story.isCheckedOut ? .clear : .travelBlue, lineWidth: 6)
             .padding(1)
     }
     

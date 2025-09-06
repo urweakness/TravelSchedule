@@ -1,12 +1,4 @@
-import OpenAPIRuntime
-import OpenAPIURLSession
 import Foundation
-
-typealias AllStationsResponse = Components.Schemas.AllStationsResponse
-
-protocol StationsListServiceProtocol {
-    func getAllStations() async throws -> AllStationsResponse
-}
 
 final class StationsListService: StationsListServiceProtocol {
     private let client: Client

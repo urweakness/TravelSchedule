@@ -1,15 +1,3 @@
-import OpenAPIRuntime
-import OpenAPIURLSession
-
-typealias Segments = Components.Schemas.Segments
-
-protocol SegmentsServiceProtocol {
-    func search(
-        from: String,
-        to: String
-    ) async throws -> Segments
-}
-
 final class SegmentsService: SegmentsServiceProtocol {
     private let client: Client
     private let apiKey: String

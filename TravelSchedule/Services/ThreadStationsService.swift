@@ -1,12 +1,3 @@
-import OpenAPIRuntime
-import OpenAPIURLSession
-
-typealias ThreadStationsResponse = Components.Schemas.ThreadStationsResponse
-
-protocol ThreadStationsServiceProtocol {
-    func getThreadStations(uid: String) async throws -> ThreadStationsResponse
-}
-
 final class ThreadStationsService: ThreadStationsServiceProtocol {
     private let client: Client
     private let apiKey: String

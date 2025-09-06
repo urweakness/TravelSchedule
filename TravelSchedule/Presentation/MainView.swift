@@ -2,40 +2,35 @@ import SwiftUI
 
 struct MainView: View {
     
+    // MARK: - Enviroments
     @EnvironmentObject private var coordinator: Coordinator
+    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
+    // MARK: - Body
     @ViewBuilder
     var body: some View {
-        VStack(spacing: 20) {
-            StoriesView(stories: stories)
-            RoutingView()
+        ZStack {
+            Color.travelWhite
+                .ignoresSafeArea()
             
-            if coordinator.travelPointsFilled {
-                findButton
-                    .transition(.opacity)
-            }
-            Spacer()
-        }
-        .background(.travelWhite)
-        .task {
-            Task {
-                await ServicesManager.shared.showCarrierInfo()
-                await ServicesManager.shared.showThreadStations()
-                await ServicesManager.shared.showCopyright()
-                await ServicesManager.shared.showStationSchedule()
+            VStack(spacing: 20) {
+                StoriesPreviewView()
+                RoutingView()
                 
-                await ServicesManager.shared.showNearestCity()
-                await ServicesManager.shared.showNearestStations()
-                await ServicesManager.shared.showSegments()
-                await ServicesManager.shared.showStationsList()
+                if travelRoutingViewModel.travelPointsFilled {
+                    findButtonView
+                        .transition(.opacity)
+                }
+                Spacer()
             }
         }
     }
     
-    private var findButton: some View {
+    // MARK: - Private Views
+    private var findButtonView: some View {
         Button(action: {
-            coordinator.push(page: .transportersChoose)
-            coordinator.isDestination = nil
+            coordinator.push(page: .carriersChoose)
+            travelRoutingViewModel.isDestination = nil
         }) {
             Text("Найти")
                 .font(.bold17)
