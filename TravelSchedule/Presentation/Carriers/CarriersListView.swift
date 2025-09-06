@@ -33,7 +33,7 @@ struct CarriersListView: View {
     
     // MARK: - Private Constants
     private let manager = ServicesManager.shared
-    private let overscrollBottomPadding: CGFloat = 17 + 20 + 20 + 8 + 32
+    private let overscrollBottomPadding = CarrierListOverscroll().bottomPadding
     
     // MARK: - Body
     var body: some View {

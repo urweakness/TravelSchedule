@@ -85,7 +85,7 @@ struct TravelPointChooseView<D: TravelPoint>: View {
     }
     
     private var searchFieldView: some View {
-        TextField("Веедите запрос", text: $searchText)
+        TextField("Введите запрос", text: $searchText)
             .textFieldStyle(SearchTextFieldStyle(text: $searchText))
             .onChange(of: searchText) {
                 setFilter()

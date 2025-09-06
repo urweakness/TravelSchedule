@@ -105,9 +105,10 @@ struct CarrierInfoView: View {
     
     // MARK: - Private Methods
     private func fetchImage() async {
+        let loader = DataLoader()
         guard
             let url = URL(string: "https://yastat.net/s3/rasp/media/data/company/logo/thy_kopya.jpg"),
-            let data = try? Data(contentsOf: url),
+            let data = await loader.downloadData(url: url),
             let uiImage = UIImage(data: data)
         else {
             return

@@ -39,12 +39,15 @@ struct CarrierListCellView: View {
             }
             .frame(height: 104)
             .task {
-                guard let imageURL = URL(string: carrier.logoURLString) else { return }
-                guard
-                    let data = try? Data(contentsOf: imageURL),
-                    let uiImage = UIImage(data: data)
-                else { return }
-                carrierLogoImage = Image(uiImage: uiImage)
+                Task {
+                    let loader = DataLoader()
+                    guard let imageURL = URL(string: carrier.logoURLString) else { return }
+                    guard
+                        let data = await loader.downloadData(url: imageURL),
+                        let uiImage = UIImage(data: data)
+                    else { return }
+                    carrierLogoImage = Image(uiImage: uiImage)
+                }
             }
     }
     
@@ -122,7 +125,6 @@ struct CarrierListCellView: View {
         }
         
         let outputDateFormatter = DateFormatter()
-        outputDateFormatter.locale = Locale(identifier: "ru_RU")
         outputDateFormatter.dateFormat = "d MMMM"
         
         return outputDateFormatter.string(from: date)

@@ -13,11 +13,13 @@ struct SettingsView: View {
         }
         .padding(.horizontal, 16)
         .background(.travelWhite)
+        .animation(.linear(duration: 0.15), value: theme)
     }
     
     private var themeSwitch: some View {
         TravelListCell(text: "Темная тема", buttonAction: nil) {
             Toggle("", isOn: $theme)
+                .tint(.travelBlue)
         }
     }
     
