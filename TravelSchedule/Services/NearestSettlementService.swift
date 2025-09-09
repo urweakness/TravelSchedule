@@ -1,15 +1,3 @@
-import OpenAPIRuntime
-import OpenAPIURLSession
-
-typealias NearestCityResponse = Components.Schemas.NearestCityResponse
-
-protocol NearestSettlementServiceProtocol {
-    func getNearestCity(
-        lat: Double,
-        lng: Double
-    ) async throws -> NearestCityResponse
-}
-
 final class NearestSettlementService: NearestSettlementServiceProtocol {
     private let client: Client
     private let apiKey: String
