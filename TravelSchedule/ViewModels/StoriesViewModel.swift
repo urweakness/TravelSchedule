@@ -14,7 +14,7 @@ final class StoriesViewModel: ObservableObject {
     
     private let storyTimeout = TimeInterval(GlobalConstants.storyPreviewTimeout)
     private let storyAnimationTimoutTimer = StoryAnimationTimer()
-    private let velocityThreshold: CGFloat = 1300
+    private let velocityThreshold: CGFloat = 1000
     
     var dismiss: DismissAction?
     
@@ -48,7 +48,8 @@ final class StoriesViewModel: ObservableObject {
     func makeStoryGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { [weak self] value in
-                self?.verticalDragValue = abs(value.translation.height)
+                guard let self else { return }
+                verticalDragValue = min(max(value.translation.height, 0), screenSize.height * 0.3)
             }
             .onEnded { [weak self] value in
                 guard let self else { return }

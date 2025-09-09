@@ -1,13 +1,16 @@
 import SwiftUI
 
 struct StoryViewRepresentable: UIViewRepresentable {
-    var stories: [StoryModel] = stubStories
+    @State var viewModel: StoriesUIKitViewModel
+    var gesture: StoriesGesture
     let screenSize: CGSize
     
     func makeUIView(context: Context) -> UIView {
-        let uiView = StoryUIKitView(frame: .init(origin: .zero, size: screenSize))
-        uiView.stories = stories
-        uiView.currentStoryIndex = 0
+        let uiView = StoryUIKitView(
+            frame: .init(origin: .zero, size: screenSize),
+            gesture: gesture,
+            viewModel: viewModel
+        )
         return uiView
     }
     
@@ -29,68 +32,138 @@ struct StoryViewRepresentable: UIViewRepresentable {
 }
 
 final class StoryUIKitView: UIView {
-    var stories: [StoryModel]?
-    var currentStoryIndex: Int?
+    var gesture: StoriesGesture
+    var viewModel: StoriesUIKitViewModel
     
-    lazy var timelineView: UIView = {
-        let view = UIView()
+    init(
+        frame: CGRect,
+        gesture: StoriesGesture,
+        viewModel: StoriesUIKitViewModel
+    ) {
+        self.gesture = gesture
+        self.viewModel = viewModel
+        super.init(frame: frame)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private lazy var timelineView: UIStackView = {
+       let view = UIStackView(arrangedSubviews: [])
+        view.axis = .horizontal
+        view.spacing = 6
+        view.distribution = .fillEqually
         view.backgroundColor = .clear
         return view
     }()
     
-    lazy var closeButtonView: UIButton = {
+    private lazy var closeButtonView: UIButton = {
         let view = UIButton(type: .custom)
         view.setImage(UIImage(systemName: "xmark"), for: .normal)
         view.tintColor = .white
         return view
     }()
     
-    lazy var imageView: UIImageView = {
+    private lazy var imageView: UIImageView = {
         let view = UIImageView()
         view.contentMode = .scaleAspectFit
-        if
-            let currentStoryIndex,
-            let fullImageResource = stories?[safe: currentStoryIndex]?.fullImageResource
-        {
-            view.image = UIImage(resource: fullImageResource)
-            view.layer.cornerRadius = 60
-        }
+        view.layer.cornerRadius = 60
         return view
     }()
     
-    lazy var titleView: UILabel = {
+    private lazy var titleView: UILabel = {
         let view = UILabel()
         view.font = .systemFont(ofSize: 24, weight: .bold)
         view.textColor = .white
         view.numberOfLines = 3
-        if
-            let currentStoryIndex,
-            let title = stories?[safe: currentStoryIndex]?.title
-        {
-            view.text = title
-        }
         return view
     }()
     
-    lazy var subtitleView: UILabel = {
+    private lazy var subtitleView: UILabel = {
         let view = UILabel()
         view.font = .systemFont(ofSize: 17, weight: .regular)
         view.textColor = .white
         view.numberOfLines = 3
-        if
-            let currentStoryIndex,
-            let subtitle = stories?[safe: currentStoryIndex]?.description
-        {
-            view.text = subtitle
-        }
         return view
     }()
     
     override func didMoveToWindow() {
         backgroundColor = .travelWhite
         
+        setUpTimeline()
         activateTimelineConstraints()
         activateConstriants()
+        
+        setUpGesture()
+        setUpViewModel()
+        
+        viewModel.viewDidLoad()
+    }
+    
+    func setUpGesture() {
+        
+        gesture.screenSize = bounds.size
+        gesture.location = { gesture in
+            gesture.location(in: self)
+        }
+        gesture.translation = { gesture in
+            gesture.translation(in: self)
+        }
+        gesture.velocity = { gesture in
+            gesture.velocity(in: self)
+        }
+        
+        gesture.trySetNextStory = viewModel.trySetNextStory
+        gesture.trySetPreviousStory = viewModel.trySetPreviousStory
+        gesture.restoreViewNormalState = { [weak self] in
+            guard let self else { return }
+            layoutSubviews()
+        }
+        gesture.dismiss = { [weak self] in
+            self?.inputViewController?.dismiss(animated: true)
+        }
+        
+        addGestureRecognizer(gesture.panGesture)
+        addGestureRecognizer(gesture.tapGesture)
+    }
+    
+    func setUpViewModel() {
+        viewModel.progressView = { [weak self] uuid in
+            guard let uuid else { return nil }
+            return self?.timelineView.arrangedSubviews.first(where: { $0.accessibilityIdentifier == "\(uuid)" }) as? UIProgressView
+        }
+        viewModel.storyDidSet = { [weak self] in
+            self?.updateContent()
+        }
+        viewModel.dismiss = { [weak self] in
+            self?.inputViewController?.dismiss(animated: true)
+        }
+    }
+
+    func updateContent() {
+        guard let story = viewModel.currentStory else { return }
+        
+        imageView.image = UIImage(resource: story.fullImageResource)
+        titleView.text = story.title
+        subtitleView.text = story.description
+    }
+    
+    func setUpTimeline() {
+        timelineView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        viewModel.stories.forEach {
+            let progressView = UIProgressView(progressViewStyle: .default)
+            progressView.progressTintColor = .travelBlue
+            progressView.trackTintColor = .white
+            progressView.accessibilityIdentifier = "\($0.id)"
+            
+            progressView.layer.cornerRadius = 3
+            progressView.clipsToBounds = true
+            progressView.layer.masksToBounds = true
+            
+            timelineView.addArrangedSubview(progressView)
+        }
     }
     
     func activateTimelineConstraints() {
@@ -130,40 +203,6 @@ final class StoryUIKitView: UIView {
                 equalToConstant: 6
             )
         ])
-        
-        var previousXAxisAnchor: NSLayoutXAxisAnchor?
-        
-        stories?.forEach {
-            let timelineItemView = UIActivityIndicatorView(style: .large)
-            timelineItemView.color = .travelBlue
-            timelineItemView.backgroundColor = .white
-            timelineItemView.accessibilityIdentifier = "\($0.id)"
-            
-            timelineItemView.translatesAutoresizingMaskIntoConstraints = false
-            
-            timelineView.addSubview(timelineItemView)
-            
-            NSLayoutConstraint.activate([
-                timelineItemView.topAnchor.constraint(
-                    equalTo: timelineView.topAnchor
-                ),
-                timelineItemView.bottomAnchor.constraint(
-                    equalTo: timelineView.bottomAnchor
-                ),
-                timelineItemView.heightAnchor.constraint(
-                    equalToConstant: 6
-                ),
-                timelineItemView.widthAnchor.constraint(
-                    equalToConstant: bounds.width / CGFloat(stories?.count ?? 1)
-                ),
-                timelineItemView.leadingAnchor.constraint(
-                    equalTo: previousXAxisAnchor ?? timelineView.leadingAnchor,
-                    constant: 8
-                )
-            ])
-            
-            previousXAxisAnchor = timelineItemView.leadingAnchor
-        }
     }
     
     func activateConstriants() {

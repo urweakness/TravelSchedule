@@ -6,6 +6,29 @@ import SwiftUI
         .environmentObject(StoriesViewModel())
 }
 
+//struct StoryView: View {
+//    
+//    @StateObject private var viewModel = StoriesUIKitViewModel()
+//    let gesture = StoriesPanGesture()
+//    
+//    @Environment(\.dismiss) private var dismiss
+//    @EnvironmentObject private var storiesViewModel: StoriesViewModel
+//    
+//    var body: some View {
+//        GeometryReader {
+//            StoryViewRepresentable(
+//                viewModel: viewModel,
+//                gesture: gesture,
+//                screenSize: $0.size
+//            )
+//            .onAppear {
+//                storiesViewModel.currentStoryIndex = 0
+//                viewModel.currentStoryIndex = storiesViewModel.currentStoryIndex
+//            }
+//        }
+//    }
+//}
+
 struct StoryView: View {
     
     // MARK: - State Private Properties
@@ -25,8 +48,11 @@ struct StoryView: View {
     var body: some View {
         GeometryReader {
             let size = $0.size
+
             makeBackgroundView(size: size)
-            
+                .opacity(1 - storiesViewModel.approximatedVerticalDragValue)
+                .onAppear { performStoriesManager(size: size) }
+
             if let currentStory = storiesViewModel.currentStory {
                 imageView(imageResource: currentStory.fullImageResource)
                     .frame(
@@ -45,6 +71,7 @@ struct StoryView: View {
                     )
                     .offset(y: storiesViewModel.verticalDragValue)
                     .scaleEffect(1 - storiesViewModel.approximatedVerticalDragValue)
+                    .animation(.interactiveSpring, value: storiesViewModel.verticalDragValue)
             }
         }
         .preferredColorScheme(.dark)
