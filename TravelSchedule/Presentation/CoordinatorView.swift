@@ -4,7 +4,7 @@ struct CoordinatorView: View {
     
     @StateObject private var coordinator = Coordinator()
     @StateObject private var appManager = AppManager()
-    @StateObject private var storiesViewModel = StoriesViewModel()
+    @StateObject private var storiesViewModel = StoriesManager()
     @StateObject private var travelRoutingViewModel = TravelRoutingViewModel()
     
     var body: some View {

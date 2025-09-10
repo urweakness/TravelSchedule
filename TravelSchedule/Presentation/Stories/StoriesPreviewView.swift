@@ -4,7 +4,7 @@ struct StoriesPreviewView: View {
     
     // MARK: - Environments
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var storiesManager: StoriesViewModel
+    @EnvironmentObject private var storiesManager: StoriesManager
     
     // MARK: - Body
     var body: some View {
