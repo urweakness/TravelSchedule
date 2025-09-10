@@ -18,14 +18,10 @@ extension Coordinator {
             TravelTabView()
             
         case .townChoose:
-            TravelPointChooseView(
-                travelPoints: Town.allCases
-            )
+            TravelPointChooseView<Town>()
             
         case .stationChoose:
-            TravelPointChooseView(
-                travelPoints: Station.allCases
-            )
+            TravelPointChooseView<Station>()
             
         case .userAgreement:
             UserAgreementView()

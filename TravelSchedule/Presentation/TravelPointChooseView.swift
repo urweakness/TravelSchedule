@@ -1,19 +1,14 @@
 import SwiftUI
 
 #Preview {
-    TravelPointChooseView(travelPoints: Town.allCases)
+    TravelPointChooseView<Town>()
         .environmentObject(Coordinator())
         .environmentObject(TravelRoutingViewModel())
 }
 
 struct TravelPointChooseView<D: TravelPoint>: View {
-    
-    // MARK: - Internal Constants
-    let travelPoints: [D]
-    
     // MARK: - State Private Properties
-    @State private var filteredDestinations = [D]()
-    @State private var searchText: String = ""
+    @StateObject private var viewModel = TravelPointChooseViewModel<D>()
     
     @EnvironmentObject private var coordinator: Coordinator
     @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
@@ -27,7 +22,7 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         VStack(spacing: 16) {
             searchFieldView
             
-            if filteredDestinations.isEmpty {
+            if viewModel.filteredObjects.isEmpty {
                 emptyDestinationsView
             } else {
                 destinationsView
@@ -38,9 +33,9 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         .padding(.horizontal, 16)
         .navigationTitle(D.navigationTitleText)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear(perform: setFilter)
         .background(.travelWhite)
         .customNavigationBackButton()
+        .animation(.bouncy, value: viewModel.filteredObjects)
     }
     
     // MARK: - Private Properties
@@ -55,7 +50,7 @@ struct TravelPointChooseView<D: TravelPoint>: View {
 
     private var destinationsView: some View {
         VStack {
-            ForEach(filteredDestinations) { destination in
+            ForEach(viewModel.filteredObjects) { destination in
                 TravelListCell(
                     text: destination.name,
                     buttonAction: {
@@ -85,25 +80,7 @@ struct TravelPointChooseView<D: TravelPoint>: View {
     }
     
     private var searchFieldView: some View {
-        TextField("Введите запрос", text: $searchText)
-            .textFieldStyle(SearchTextFieldStyle(text: $searchText))
-            .onChange(of: searchText) {
-                setFilter()
-            }
-    }
-    
-    // MARK: - Private Methods
-    private func setFilter() {
-        withAnimation(.easeInOut(duration: 0.15)) {
-            if searchText.isEmpty {
-                filteredDestinations = travelPoints
-            } else {
-                filteredDestinations = travelPoints.filter {
-                    $0.name
-                        .lowercased()
-                        .contains(searchText.lowercased())
-                }
-            }
-        }
+        TextField("Введите запрос", text: $viewModel.searchText)
+            .textFieldStyle(SearchTextFieldStyle(text: $viewModel.searchText))
     }
 }
