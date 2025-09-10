@@ -1,144 +1,136 @@
 import SwiftUI
+import Combine
 
 final class StoriesViewModel: ObservableObject {
     
-    @inline(__always)
-    @Published private(set) var verticalDragValue: CGFloat = 0
-    
-    @Published private(set) var stories: [StoryModel] = stubStories
-    @Published private(set) var currentStory: StoryModel?
-    @Published private(set) var currentProgressValue: CGFloat = 0.0
-    
     @Published var screenSize: CGSize = .zero
-    @Published var currentStoryIndex: Int = 0
+    @Published private(set) var currentStoryIndex: Int = -1
+    @Published private(set) var currentProgressValue: CGFloat = 0.0
+    @Published private(set) var stories: [StoryModel]?
+    @Published private(set) var currentStory: StoryModel?
     
     private let storyTimeout = TimeInterval(GlobalConstants.storyPreviewTimeout)
     private let storyAnimationTimoutTimer = StoryAnimationTimer()
-    private let velocityThreshold: CGFloat = 1000
     
+    private var cancellables = Set<AnyCancellable>()
+    
+    let dragGestureModel = DragGestureObject()
     var dismiss: DismissAction?
     
-    @inline(__always)
-    var approximatedVerticalDragValue: CGFloat {
-        verticalDragValue / screenSize.height
+    init() {
+        setupDragGestureModel()
+        setupBindings()
     }
     
-    func switchPreviousStories() {
-//        for index in stride(from: currentStoryIndex - 1, through: 0, by: -1) {
-//            guard let story = stories[safe: index] else { return }
-//            
-//            let newStory = story.switchedCheckModel(to: true)
-//            withAnimation {
-//                stories[currentStoryIndex] = newStory
-//            }
-//        }
-    }
-    
-    func progressValue(storyIndex: Int) -> CGFloat {
-        if
-            let story = stories[safe: storyIndex],
-            story.isCheckedOut
-        {
-            return 1.0
-        }
-        
-        return currentStoryIndex == storyIndex ? currentProgressValue : 0.0
-    }
-    
-    func makeStoryGesture() -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { [weak self] value in
-                guard let self else { return }
-                verticalDragValue = min(max(value.translation.height, 0), screenSize.height * 0.3)
-            }
-            .onEnded { [weak self] value in
-                guard let self else { return }
-                
-                let isSwipeDown = value.velocity.height > velocityThreshold
-                if approximatedVerticalDragValue >= 0.3 || isSwipeDown {
-                    invalidateTimer()
-                    dismissView()
-                    return
-                }
-                
-                guard verticalDragValue == 0 else {
-                    withAnimation {
-                        self.verticalDragValue = 0
-                    }
-                    return
-                }
-                
-                guard value.translation.width.isZero else {
-                    if value.translation.width > 0 {
-                        trySetPreviousStory()
-                    } else {
-                        trySetNextStory()
-                    }
-                    return
-                }
-                
-                if value.location.x < screenSize.width / 2 {
-                    trySetPreviousStory()
-                } else {
-                    trySetNextStory()
-                }
-            }
-    }
-    
-    private func dismissView() {
-        dismiss?()
-        invalidateTimer()
-        updateCurrentStoryCheckedOutStatus(false)
+    func viewDidAppear(
+        screenSize: CGSize,
+        storyIndex: Int,
+        stories: [StoryModel]
+    ) {
         updateCurrentProgressValueAnimated(0, instantly: true)
-        dismiss = nil
-        currentStory = nil
-        verticalDragValue = 0
-        currentStoryIndex = 0
-    }
-    
-    func invalidateTimer() {
-        storyAnimationTimoutTimer.invalidateTimer()
-    }
-    
-    func trySetNewStory() {
-        guard let story = stories[safe: currentStoryIndex] else {
-            invalidateTimer()
-            dismissView()
-            return
-        }
         
-        withAnimation {
-            currentStory = story
-        }
+        self.stories = stories
+        self.currentStoryIndex = storyIndex
+        self.screenSize = screenSize
 
-        updateCurrentProgressValueAnimated(1.0)
         updateTimer()
     }
     
-    func trySetPreviousStory() {
-        storyAnimationTimoutTimer.invalidateTimer()
-        
-        updateCurrentProgressValueAnimated(0.0, instantly: true)
-        updateCurrentStoryCheckedOutStatus(false)
-        currentStoryIndex = max(0, currentStoryIndex - 1)
-        updateCurrentStoryCheckedOutStatus(false)
-        
-        trySetNewStory()
+    func dismissView() {
+        invalidateTimer()
+        dismiss?()
     }
     
-    func trySetNextStory() {
+    private func setupDragGestureModel() {
+        dragGestureModel.screenSize = { [weak self] in
+            self?.screenSize ?? .zero
+        }
+        dragGestureModel.dismiss = { [weak self] in
+            self?.dismissView()
+        }
+        dragGestureModel.invalidateTimer = { [weak self] in
+            self?.invalidateTimer()
+        }
+        dragGestureModel.performPage = { [weak self] pageSpec in
+            guard let self else { return }
+            
+            switch pageSpec {
+            case .none:
+                break
+            case .next:
+                updateCurrentStoryCheckedOutStatus(true)
+                currentStoryIndex += 1
+            case .prev:
+                updateCurrentStoryCheckedOutStatus(false)
+                currentStoryIndex = max(currentStoryIndex - 1, 0)
+            }
+        }
+    }
+    
+    private func setupBindings() {
+        $currentStoryIndex
+            .removeDuplicates()
+            .map { [weak self] index -> StoryModel? in
+                
+                guard
+                    let self,
+                    let story = stories?[safe: index]
+                else { return nil }
+                
+                return story
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.currentStory, on: self)
+            .store(in: &cancellables)
+        
+        $currentStory
+            .removeDuplicates()
+            .sink { [weak self] story in
+                guard
+                    let self,
+                    let story,
+                    let storyIndex = self.stories?.firstIndex(of: story)
+                else {
+                    self?.invalidateTimer()
+                    self?.dismissView()
+                    return
+                }
+                
+                stories?[storyIndex] = story
+            }
+            .store(in: &cancellables)
+        
+        $currentStoryIndex
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.invalidateTimer()
+                self?.updateTimer()
+                self?.updateCurrentProgressValueAnimated(0, instantly: true)
+                self?.updateCurrentProgressValueAnimated(1)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func invalidateTimer() {
         storyAnimationTimoutTimer.invalidateTimer()
+    }
+    
+    func progressValue(storyIndex: Int) -> CGFloat {
+        guard let story = stories?[safe: storyIndex] else {
+            return 0.0
+        }
         
-        updateCurrentProgressValueAnimated(0.0, instantly: true)
-        updateCurrentStoryCheckedOutStatus(true)
-        currentStoryIndex += 1
-        
-        trySetNewStory()
+        if currentStoryIndex == storyIndex {
+            return currentProgressValue
+        } else {
+            return story.isCheckedOut ? 1.0 : 0.0
+        }
     }
     
     private func updateTimer() {
         storyAnimationTimoutTimer.updateTimer(interval: storyTimeout) { [weak self] in
-            self?.trySetNextStory()
+            self?.updateCurrentStoryCheckedOutStatus(true)
+            self?.currentStoryIndex += 1
         }
     }
     
@@ -146,8 +138,7 @@ final class StoriesViewModel: ObservableObject {
         guard let newStory = currentStory?.switchedCheckModel(to: isCheckedOut) else { return }
         
         withAnimation(.linear(duration: 0)) {
-            stories[currentStoryIndex] = newStory
-            self.currentStory = newStory
+            stories?[currentStoryIndex] = newStory
         }
     }
     

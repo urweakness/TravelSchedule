@@ -3,7 +3,7 @@ import SwiftUI
 #Preview {
     StoryView()
         .environmentObject(Coordinator())
-        .environmentObject(StoriesViewModel())
+        .environmentObject(StoriesManager())
 }
 
 //struct StoryView: View {
@@ -32,16 +32,11 @@ import SwiftUI
 struct StoryView: View {
     
     // MARK: - State Private Properties
-    @State private var currentStory: StoryModel?
-    @State private var currentProgressValue: CGFloat = 0.0
-    
-    // MARK: - Private Constants
-    private let storyTimeout = TimeInterval(GlobalConstants.storyPreviewTimeout)
-    private let storyAnimationTimoutTimer = StoryAnimationTimer()
+    @StateObject private var viewModel = StoriesViewModel()
     
     // MARK: - Enviroments
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var storiesViewModel: StoriesViewModel
+    @EnvironmentObject private var storiesManager: StoriesManager
     
     // MARK: - Body
     @ViewBuilder
@@ -50,10 +45,9 @@ struct StoryView: View {
             let size = $0.size
 
             makeBackgroundView(size: size)
-                .opacity(1 - storiesViewModel.approximatedVerticalDragValue)
                 .onAppear { performStoriesManager(size: size) }
 
-            if let currentStory = storiesViewModel.currentStory {
+            if let currentStory = viewModel.currentStory {
                 imageView(imageResource: currentStory.fullImageResource)
                     .frame(
                         width: size.width,
@@ -67,11 +61,13 @@ struct StoryView: View {
                         makeBottomElementsView(currentStory)
                     }
                     .gesture(
-                        storiesViewModel.makeStoryGesture()
+                        viewModel.dragGestureModel.makeStoryGesture()
                     )
-                    .offset(y: storiesViewModel.verticalDragValue)
-                    .scaleEffect(1 - storiesViewModel.approximatedVerticalDragValue)
-                    .animation(.interactiveSpring, value: storiesViewModel.verticalDragValue)
+                    .offset(y: viewModel.dragGestureModel.verticalDragValue)
+                    .scaleEffect(1 - viewModel.dragGestureModel.approximated)
+                    .animation(.interactiveSpring, value: viewModel.dragGestureModel.verticalDragValue)
+                    .animation(.interactiveSpring, value: viewModel.currentStory)
+                    .animation(.interactiveSpring, value: viewModel.stories)
             }
         }
         .preferredColorScheme(.dark)
@@ -82,11 +78,14 @@ struct StoryView: View {
 // MARK: Private Methods
 private extension StoryView {
     func performStoriesManager(size: CGSize) {
-        storiesViewModel.dismiss = dismiss
-        storiesViewModel.screenSize = size
-        storiesViewModel.switchPreviousStories()
+        let currentStoryIndex = storiesManager.currentStoryIndex
+        let stories = storiesManager.stories
         
-        storiesViewModel.trySetNewStory()
+        viewModel.viewDidAppear(
+            screenSize: size,
+            storyIndex: currentStoryIndex,
+            stories: stories
+        )
     }
 }
 
@@ -110,16 +109,13 @@ private extension StoryView {
     
     func makeBackgroundView(size: CGSize) -> some View {
         Color.travelWhite
-            .opacity(1.0 - storiesViewModel.approximatedVerticalDragValue)
+            .opacity(1.0 - viewModel.dragGestureModel.approximated)
             .onAppear { performStoriesManager(size: size) }
             .ignoresSafeArea()
     }
     
     var closeButtonView: some View {
-        Button(action: {
-            storiesViewModel.invalidateTimer()
-            dismiss()
-        }) {
+        Button(action: viewModel.dismissView) {
             Circle()
                 .fill(.travelWhite)
                 .overlay {
@@ -138,7 +134,7 @@ private extension StoryView {
     
     func timeIndicatorView() -> some View {
         HStack(spacing: 6) {
-            ForEach(0..<storiesViewModel.stories.count, id: \.self) { index in
+            ForEach(0..<(viewModel.stories?.count ?? 0), id: \.self) { index in
                 progressView(storyIndex: index)
             }
         }
@@ -147,7 +143,7 @@ private extension StoryView {
     
     func progressView(storyIndex: Int) -> some View {
         ProgressView(
-            value: storiesViewModel.progressValue(storyIndex: storyIndex),
+            value: viewModel.progressValue(storyIndex: storyIndex),
             total: 1.0
         )
         .progressViewStyle(TravelScheduleStoryProgressViewStyle())
