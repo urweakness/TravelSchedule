@@ -1,7 +1,7 @@
 import DeveloperToolsSupport
 import Foundation
 
-struct StoryModel: Identifiable {
+struct StoryModel: Identifiable, Equatable {
     let id = UUID()
     let previewImageResource: ImageResource
     let fullImageResource: ImageResource
