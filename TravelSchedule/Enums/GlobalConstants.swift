@@ -6,15 +6,110 @@ enum GlobalConstants {
 
 let templateText = "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text"
 let stubStories: [StoryModel] = [
-    .init(previewImageResource: ._1PreviewIllustration, fullImageResource: ._11BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false),
-    
-    .init(previewImageResource: ._2PreviewIllustration, fullImageResource: ._21BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false),
-    
-    .init(previewImageResource: ._3PreviewIllustration, fullImageResource: ._31BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false),
-    
-    .init(previewImageResource: ._4PreviewIllustration, fullImageResource: ._41BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false),
-    
-    .init(previewImageResource: ._5PreviewIllustration, fullImageResource: ._51BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false),
-    
-    .init(previewImageResource: ._6PreviewIllustration, fullImageResource: ._61BigIllustration, title: .init(templateText), description: templateText, isCheckedOut: false)
+	.init(
+		previewImageResource: ._1PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._11BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._12BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	),
+	.init(
+		previewImageResource: ._2PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._21BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._22BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	),
+
+	.init(
+		previewImageResource: ._3PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._31BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._32BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	),
+
+	.init(
+		previewImageResource: ._4PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._41BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._42BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	),
+
+	.init(
+		previewImageResource: ._5PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._51BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._52BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	),
+
+	.init(
+		previewImageResource: ._6PreviewIllustration,
+		storyParts: [
+			.init(
+				fullImageResource: ._61BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._62BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			)
+		]
+	)
 ]

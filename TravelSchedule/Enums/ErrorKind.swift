@@ -28,7 +28,8 @@ enum ErrorKind {
 }
 
 // MARK: - ErrorKind Extensions
-// MARK: Hashable Conformance
+
+// MARK: Internal Hashable Conformance
 extension ErrorKind: Hashable {
     static func == (lhs: ErrorKind, rhs: ErrorKind) -> Bool {
         lhs.description == rhs.description

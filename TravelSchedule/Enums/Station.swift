@@ -28,8 +28,4 @@ enum Station: TravelPoint {
     static var noContentTitleText: String {
         "Станция не найдена"
     }
-    
-    static var navigationTitleText: String {
-        "Выбор станции"
-    }
 }

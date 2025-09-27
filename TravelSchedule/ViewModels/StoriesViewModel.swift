@@ -1,150 +1,312 @@
 import SwiftUI
 import Combine
 
-final class StoriesViewModel: ObservableObject {
+@Observable
+@MainActor
+final class StoriesViewModel {
+	
+	// MARK: - Internal Properties
+    var screenSize: CGSize = .zero
+    var currentStoryIndex: Int = 0 {
+        didSet { storyIndexDidChange() }
+    }
+    var currentStoryPartIndex: Int = 0 {
+        didSet { storyPartIndexDidChange() }
+    }
+    var stories: [StoryModel] = []
+    var currentProgressPhase: StoryAnimationPhase = .start
+    var verticalDragValue: CGFloat = 0
+	
+	var progressRunID: Int = 0
+
+    @ObservationIgnored
+    var dismiss: DismissAction?
+	
+	// MARK: - Internal Constants
+    let storyTimeout = TimeInterval(GlobalConstants.storyPreviewTimeout)
     
-    @Published var screenSize: CGSize = .zero
-    @Published private(set) var currentStoryIndex: Int = -1
-    @Published private(set) var currentProgressValue: CGFloat = 0.0
-    @Published private(set) var stories: [StoryModel]?
-    @Published private(set) var currentStory: StoryModel?
+	// MARK: - Private Properties
+    @ObservationIgnored
+    private var timer: Timer?
     
-    private let storyTimeout = TimeInterval(GlobalConstants.storyPreviewTimeout)
-    private let storyAnimationTimoutTimer = StoryAnimationTimer()
-    
+    @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
     
-    let dragGestureModel = DragGestureObject()
-    var dismiss: DismissAction?
+    @ObservationIgnored
+    private var cancellable: Cancellable?
     
+    @ObservationIgnored
+    private var startProgressWorkItem: DispatchWorkItem?
+    
+	// Режим повторного просмотра: не трогаем isCheckedOut, но проигрываем всю сторис
+	@ObservationIgnored
+	private var isRewatchMode: Bool = false
+	
+	// MARK: - Private Constants
+	private let dragGestureModel = DragGestureObject()
+    
+	// MARK: - Internal Init
     init() {
-        setupDragGestureModel()
-        setupBindings()
+        setupGestureHandlers()
     }
-    
-    func viewDidAppear(
-        screenSize: CGSize,
-        storyIndex: Int,
-        stories: [StoryModel]
-    ) {
-        updateCurrentProgressValueAnimated(0, instantly: true)
-        
-        self.stories = stories
-        self.currentStoryIndex = storyIndex
-        self.screenSize = screenSize
+}
 
-        updateTimer()
-    }
-    
-    func dismissView() {
-        invalidateTimer()
-        dismiss?()
-    }
-    
-    private func setupDragGestureModel() {
-        dragGestureModel.screenSize = { [weak self] in
-            self?.screenSize ?? .zero
-        }
-        dragGestureModel.dismiss = { [weak self] in
-            self?.dismissView()
-        }
-        dragGestureModel.invalidateTimer = { [weak self] in
-            self?.invalidateTimer()
-        }
-        dragGestureModel.performPage = { [weak self] pageSpec in
-            guard let self else { return }
-            
-            switch pageSpec {
-            case .none:
-                break
-            case .next:
-                updateCurrentStoryCheckedOutStatus(true)
-                currentStoryIndex += 1
-            case .prev:
-                updateCurrentStoryCheckedOutStatus(false)
-                currentStoryIndex = max(currentStoryIndex - 1, 0)
-            }
-        }
-    }
-    
-    private func setupBindings() {
-        $currentStoryIndex
-            .removeDuplicates()
-            .map { [weak self] index -> StoryModel? in
-                
-                guard
-                    let self,
-                    let story = stories?[safe: index]
-                else { return nil }
-                
-                return story
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.currentStory, on: self)
-            .store(in: &cancellables)
-        
-        $currentStory
-            .removeDuplicates()
-            .sink { [weak self] story in
-                guard
-                    let self,
-                    let story,
-                    let storyIndex = self.stories?.firstIndex(of: story)
-                else {
-                    self?.invalidateTimer()
-                    self?.dismissView()
-                    return
-                }
-                
-                stories?[storyIndex] = story
-            }
-            .store(in: &cancellables)
-        
-        $currentStoryIndex
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                self?.invalidateTimer()
-                self?.updateTimer()
-                self?.updateCurrentProgressValueAnimated(0, instantly: true)
-                self?.updateCurrentProgressValueAnimated(1)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func invalidateTimer() {
-        storyAnimationTimoutTimer.invalidateTimer()
-    }
-    
-    func progressValue(storyIndex: Int) -> CGFloat {
-        guard let story = stories?[safe: storyIndex] else {
-            return 0.0
-        }
-        
-        if currentStoryIndex == storyIndex {
-            return currentProgressValue
-        } else {
-            return story.isCheckedOut ? 1.0 : 0.0
-        }
-    }
-    
-    private func updateTimer() {
-        storyAnimationTimoutTimer.updateTimer(interval: storyTimeout) { [weak self] in
-            self?.updateCurrentStoryCheckedOutStatus(true)
-            self?.currentStoryIndex += 1
-        }
-    }
-    
-    private func updateCurrentStoryCheckedOutStatus(_ isCheckedOut: Bool) {
-        guard let newStory = currentStory?.switchedCheckModel(to: isCheckedOut) else { return }
-        
-        withAnimation(.linear(duration: 0)) {
-            stories?[currentStoryIndex] = newStory
-        }
-    }
-    
-    private func updateCurrentProgressValueAnimated(_ value: CGFloat, instantly: Bool = false) {
-        withAnimation(instantly ? nil : .linear(duration: storyTimeout)) {
-            currentProgressValue = value
-        }
-    }
+// MARK: - StoriesViewModel Extensions
+
+// MARK: Internal
+
+//MARK: viewDidAppear
+extension StoriesViewModel {
+	func viewDidAppear(
+		dismiss: DismissAction,
+		screenSize: CGSize,
+		storyIndex: Int,
+		stories: [StoryModel]
+	) {
+		self.dismiss = dismiss
+		self.screenSize = screenSize
+		self.stories = stories
+		
+		// delect rewatch model for choosed story
+		let fullyViewed = isStoryFullyViewed(in: stories, at: storyIndex)
+		self.isRewatchMode = fullyViewed
+		
+		// start part
+		// if story fully checked -> start with 0 index
+		// else -> start with FIRST not checked
+		let startPartIndex = fullyViewed ? 0 : firstUnviewedPartIndex(for: storyIndex, in: stories)
+		self.currentStoryIndex = storyIndex
+		self.currentStoryPartIndex = startPartIndex
+		
+		setupVerticalDragBinding()
+		
+		finishProgressAnimation()
+		scheduleStartProgressAfterTick(restartTimer: true)
+	}
+	
+	func makeDragGesture() -> some Gesture {
+		dragGestureModel.makeStoryGesture()
+	}
+}
+
+// MARK: viewModel state managing
+extension StoriesViewModel {
+	func performDismissView() {
+		invalidateTimer()
+		dismiss?()
+	}
+	
+	private func invalidateTimer() {
+		timer?.invalidate()
+		timer = nil
+	}
+	
+	private func restartTimer() {
+		invalidateTimer()
+		timer = Timer.scheduledTimer(
+			timeInterval: storyTimeout,
+			target: self,
+			selector: #selector(timerDidFire),
+			userInfo: nil,
+			repeats: false
+		)
+	}
+	
+	@objc private func timerDidFire(_ timer: Timer) {
+		goToNextPartOrStory()
+	}
+	
+	func startProgressAnimation() {
+		currentProgressPhase = .end
+		progressRunID &+= 1
+	}
+	func finishProgressAnimation() {
+		currentProgressPhase = .start
+	}
+}
+
+// MARK: Data Getters
+extension StoriesViewModel {
+	var currentStory: StoryModel? {
+		stories[safe: currentStoryIndex]
+	}
+	
+	var approximatedVerticalDragValue: CGFloat {
+		screenSize.height > 0 ? verticalDragValue / screenSize.height : 0
+	}
+	
+	func progressState(for index: Int) -> (phase: StoryAnimationPhase, isAnimated: Bool) {
+		guard let story = currentStory, story.storyParts.indices.contains(index) else {
+			return (.start, false)
+		}
+		
+		if isRewatchMode {
+			if index < currentStoryPartIndex {
+				return (.end, false)
+			} else if index == currentStoryPartIndex {
+				return (currentProgressPhase, true)
+			} else {
+				return (.start, false)
+			}
+		}
+		
+		let part = story.storyParts[index]
+		if part.isCheckedOut || index < currentStoryPartIndex {
+			return (.end, false)
+		} else if index == currentStoryPartIndex {
+			return (currentProgressPhase, !part.isCheckedOut)
+		} else {
+			return (.start, false)
+		}
+	}
+}
+
+// MARK: stories navigation
+extension StoriesViewModel {
+	func goToNextPartOrStory() {
+		guard let story = currentStory else { return }
+		// Помечаем текущую часть просмотренной (кроме режима повторного просмотра)
+		setCheckedOut(storyIndex: currentStoryIndex, partIndex: currentStoryPartIndex, to: true)
+		
+		if currentStoryPartIndex < story.storyParts.count - 1 {
+			currentStoryPartIndex += 1
+		} else if currentStoryIndex < stories.count - 1 {
+			let nextIndex = currentStoryIndex + 1
+			currentStoryIndex = nextIndex
+			// Определяем режим для новой сторис
+			isRewatchMode = isStoryFullyViewed(in: stories, at: nextIndex)
+			currentStoryPartIndex = isRewatchMode
+			? 0
+			: firstUnviewedPartIndex(for: nextIndex, in: stories)
+		} else {
+			performDismissView()
+		}
+	}
+	
+	func goToPrevPartOrStory() {
+		if currentStoryPartIndex > 0 {
+			if !isRewatchMode {
+				setCheckedOut(storyIndex: currentStoryIndex, partIndex: currentStoryPartIndex, to: false)
+				let targetIndex = currentStoryPartIndex - 1
+				setCheckedOut(storyIndex: currentStoryIndex, partIndex: targetIndex, to: false)
+				currentStoryPartIndex = targetIndex
+			} else {
+				currentStoryPartIndex -= 1
+			}
+		} else if currentStoryIndex > 0 {
+			if !isRewatchMode {
+				setCheckedOut(storyIndex: currentStoryIndex, partIndex: currentStoryPartIndex, to: false)
+			}
+			let prevIndex = currentStoryIndex - 1
+			currentStoryIndex = prevIndex
+			isRewatchMode = isStoryFullyViewed(in: stories, at: prevIndex)
+			currentStoryPartIndex = isRewatchMode
+			? 0
+			: firstUnviewedPartIndex(for: prevIndex, in: stories)
+		}
+	}
+}
+
+// MARK: - Private
+
+// MARK: viewModel setting up
+private extension StoriesViewModel {
+	func setupVerticalDragBinding() {
+		dragGestureModel.verticalDragValueSubject
+			.removeDuplicates()
+			.receive(on: DispatchQueue.main)
+			.sink { [weak self] value in
+				self?.verticalDragValue = value
+			}
+			.store(in: &cancellables)
+	}
+	
+	func setupGestureHandlers() {
+		dragGestureModel.dismiss = { [weak self] in
+			self?.performDismissView()
+		}
+		dragGestureModel.invalidateTimer = { [weak self] in
+			self?.invalidateTimer()
+		}
+		dragGestureModel.performPage = { [weak self] spec in
+			guard let self else { return }
+			switch spec {
+			case .next:
+				goToNextPartOrStory()
+			case .prev:
+				goToPrevPartOrStory()
+			case .none:
+				break
+			}
+		}
+		dragGestureModel.screenSize = { [weak self] in
+			self?.screenSize ?? .zero
+		}
+	}
+}
+
+// MARK: Updating isCheckedOut status for concrete part
+private extension StoriesViewModel {
+	func setCheckedOut(storyIndex: Int, partIndex: Int, to isCheckedOut: Bool) {
+		// Do not edit source data in rewatchMode
+		guard !isRewatchMode else { return }
+		guard stories.indices.contains(storyIndex) else { return }
+		let story = stories[storyIndex]
+		guard story.storyParts.indices.contains(partIndex) else { return }
+		var parts = story.storyParts
+		let old = parts[partIndex]
+		parts[partIndex] = StoryPartModel(
+			id: old.id,
+			fullImageResource: old.fullImageResource,
+			title: old.title,
+			description: old.description,
+			isCheckedOut: isCheckedOut
+		)
+		stories[storyIndex] = StoryModel(
+			id: story.id,
+			previewImageResource: story.previewImageResource,
+			storyParts: parts
+		)
+	}
+}
+
+// MARK: reactive handlers (didSet observation)
+private extension StoriesViewModel {
+	func storyIndexDidChange() {
+		// На случай внешней смены индекса
+		isRewatchMode = isStoryFullyViewed(in: stories, at: currentStoryIndex) && currentStoryPartIndex == 0
+		finishProgressAnimation()
+		scheduleStartProgressAfterTick(restartTimer: true)
+	}
+	
+	func storyPartIndexDidChange() {
+		finishProgressAnimation()
+		scheduleStartProgressAfterTick(restartTimer: true)
+	}
+}
+
+// MARK: - Helpers
+private extension StoriesViewModel {
+	func firstUnviewedPartIndex(for storyIndex: Int, in stories: [StoryModel]) -> Int {
+		guard stories.indices.contains(storyIndex) else { return 0 }
+		let parts = stories[storyIndex].storyParts
+		return parts.firstIndex(where: { !$0.isCheckedOut }) ?? 0
+	}
+	
+	func isStoryFullyViewed(in stories: [StoryModel], at index: Int) -> Bool {
+		guard stories.indices.contains(index) else { return false }
+		return stories[index].storyParts.allSatisfy(\.isCheckedOut)
+	}
+	
+	func scheduleStartProgressAfterTick(restartTimer shouldRestartTimer: Bool) {
+		startProgressWorkItem?.cancel()
+		if shouldRestartTimer { invalidateTimer() }
+		let work = DispatchWorkItem { [weak self] in
+			guard let self else { return }
+			self.startProgressAnimation()
+			if shouldRestartTimer { self.restartTimer() }
+		}
+		startProgressWorkItem = work
+		DispatchQueue.main.async(execute: work)
+	}
 }

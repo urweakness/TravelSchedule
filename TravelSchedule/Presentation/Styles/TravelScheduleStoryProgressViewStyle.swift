@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TravelScheduleStoryProgressViewStyle: ProgressViewStyle {
+	// MARK: - Body
     func makeBody(configuration: Configuration) -> some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {

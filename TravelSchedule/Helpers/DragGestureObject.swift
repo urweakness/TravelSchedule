@@ -1,71 +1,59 @@
 import SwiftUI
 import Combine
 
-final class DragGestureObject: ObservableObject {
+@Observable
+@MainActor
+final class DragGestureObject {
     
-    /// Page spec direction
     enum PageSpec {
-        /// Next page
         case next
-        /// Previous page
         case prev
-        /// Current page
         case none
     }
     
+    @ObservationIgnored
     var dismiss: (() -> Void)?
+    @ObservationIgnored
     var invalidateTimer: (() -> Void)?
+    @ObservationIgnored
     var performPage: ((PageSpec) -> Void)?
+    @ObservationIgnored
     var screenSize: (() -> CGSize)?
     
     @inline(__always)
-    @Published private(set) var verticalDragValue: CGFloat = 0
+    private(set) var verticalDragValue: CGFloat = 0 {
+        didSet {
+            verticalDragValueSubject.send(verticalDragValue)
+            isDismissing = verticalDragValue > 0
+        }
+    }
+    let verticalDragValueSubject = PassthroughSubject<CGFloat, Never>()
     
+    @ObservationIgnored
+    private var isDismissing: Bool = false
+
     private let velocityThreshold: CGFloat = 1000
     
+    @ObservationIgnored
     private var cancellables = Set<AnyCancellable>()
-    let dragGestureSubject = PassthroughSubject<(value: _ChangedGesture<DragGesture>.Value, isEnded: Bool), Never>()
+    private let dragGestureSubject = PassthroughSubject<(_ChangedGesture<DragGesture>.Value), Never>()
     
     init() {
         setupBindings()
     }
     
-    @inline(__always)
+    @inlinable
     var approximated: CGFloat {
-        verticalDragValue / (screenSize?().height ?? .zero)
+        verticalDragValue / (screenSize?().height ?? .zero )
     }
     
     private func setupBindings() {
-        
-        // MARK: - verticalDragValue updater
-        dragGestureSubject
-            .removeDuplicates { $0.value == $1.value && $0.isEnded == $1.isEnded }
-            .map { [weak self] data -> CGFloat in
-                guard
-                    let self,
-                    let screenSize = screenSize?()
-                else { return 0 }
-                
-                if data.isEnded {
-                    return min(max(data.value.translation.height, 0), screenSize.height * 0.3)
-                } else {
-                    return 0
-                }
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.verticalDragValue, on: self)
-            .store(in: &cancellables)
-        
         // MARK: - Dismiss Handler
         dragGestureSubject
-            .removeDuplicates { $0.value == $1.value && $0.isEnded == $1.isEnded }
-            .filter { [weak self] data -> Bool in
-                guard
-                    let self,
-                    data.isEnded
-                else { return false }
-                
-                let isSwipeDown = data.value.velocity.height > self.velocityThreshold
+            .removeDuplicates()
+            .filter { [weak self] value -> Bool in
+                guard let self else { return false }
+                let isSwipeDown = value.velocity.height > self.velocityThreshold
                 return approximated >= 0.3 || isSwipeDown
             }
             .sink { [weak self] _ in
@@ -76,23 +64,19 @@ final class DragGestureObject: ObservableObject {
         
         // MARK: - Page Changing Handler
         dragGestureSubject
-            .removeDuplicates { $0.value == $1.value && $0.isEnded == $1.isEnded }
-            .map { [weak self] data -> PageSpec in
+            .removeDuplicates()
+            .map { [weak self] value -> PageSpec in
                 guard
                     let self,
                     let screenSize = screenSize?(),
-                    data.isEnded
+                    !isDismissing
                 else { return .none }
                 
-                let width = data.value.translation.width
-                let location = data.value.location
+                let width = value.translation.width
+                let location = value.location
                 
-                guard width.isZero else {
-                    if width > 0 {
-                        return .prev
-                    } else {
-                        return .next
-                    }
+                if abs(width) > 24 {
+                    return width > 0 ? .prev : .next
                 }
                 
                 if location.x < screenSize.width / 2 {
@@ -110,10 +94,15 @@ final class DragGestureObject: ObservableObject {
     func makeStoryGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { [weak self] value in
-                self?.dragGestureSubject.send((value: value, isEnded: false))
+                guard
+                    let self,
+                    let height = screenSize?().height
+                else { return }
+
+                verticalDragValue = min(max(value.translation.height, 0), height * 0.3)
             }
             .onEnded { [weak self] value in
-                self?.dragGestureSubject.send((value: value, isEnded: true))
+                self?.dragGestureSubject.send(value)
                 self?.verticalDragValue = 0
             }
     }

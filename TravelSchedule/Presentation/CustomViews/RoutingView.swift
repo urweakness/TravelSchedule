@@ -2,8 +2,8 @@ import SwiftUI
 
 struct RoutingView: View {
     
+    @ObservedObject var manager: TravelRoutingManager
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var travelRoutingManager: TravelRoutingViewModel
     
     var body: some View {
         ViewThatFits {
@@ -25,8 +25,8 @@ struct RoutingView: View {
     
     private var fromTitle: String {
         if
-            let townName = travelRoutingManager.startTown?.name,
-            let stationName = travelRoutingManager.startStation?.name
+            let townName = manager.startTown?.name,
+            let stationName = manager.startStation?.name
         {
             "\(townName) (\(stationName))"
         } else {
@@ -36,8 +36,8 @@ struct RoutingView: View {
     
     private var toTitle: String {
         if
-            let townName = travelRoutingManager.destinationTown?.name,
-            let stationName = travelRoutingManager.destinationStation?.name
+            let townName = manager.destinationTown?.name,
+            let stationName = manager.destinationStation?.name
         {
             "\(townName) (\(stationName))"
         } else {
@@ -92,7 +92,7 @@ struct RoutingView: View {
         Button(
             action: {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    travelRoutingManager.swapDestinations()
+                    manager.swapDestinations()
                 }
             }
         ) {
@@ -108,8 +108,7 @@ struct RoutingView: View {
     }
     
     private func route(isDestination: Bool) {
-        travelRoutingManager.isDestination = isDestination
+        manager.isDestination = isDestination
         coordinator.push(page: .townChoose)
-        coordinator.navigationTitleDisplayMode = .inline
     }
 }

@@ -1,20 +1,16 @@
 import SwiftUI
 
-#Preview {
-    TravelPointChooseView<Town>()
-        .environmentObject(Coordinator())
-        .environmentObject(TravelRoutingViewModel())
-}
-
 struct TravelPointChooseView<D: TravelPoint>: View {
+	
     // MARK: - State Private Properties
     @StateObject private var viewModel = TravelPointChooseViewModel<D>()
     
+	// MARK: - DI States
+    @ObservedObject var manager: TravelRoutingManager
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
     // MARK: - Private Constants
-    private let manager = ServicesManager.shared
+    private let networkServicesManager = ServicesManager.shared
     
     // MARK: - Body
     @ViewBuilder
@@ -31,8 +27,8 @@ struct TravelPointChooseView<D: TravelPoint>: View {
             Spacer()
         }
         .padding(.horizontal, 16)
-        .navigationTitle(D.navigationTitleText)
-        .navigationBarTitleDisplayMode(.inline)
+		.navigationTitle(coordinator.navigationTitle)
+		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
         .background(.travelWhite)
         .customNavigationBackButton()
         .animation(.bouncy, value: viewModel.filteredObjects)
@@ -54,19 +50,19 @@ struct TravelPointChooseView<D: TravelPoint>: View {
                 TravelListCell(
                     text: destination.name,
                     buttonAction: {
-                        guard let isDestination = travelRoutingViewModel.isDestination else { return }
+                        guard let isDestination = manager.isDestination else { return }
                         if let town = destination as? Town {
                             if isDestination  {
-                                travelRoutingViewModel.destinationTown = town
+                                manager.destinationTown = town
                             } else {
-                                travelRoutingViewModel.startTown = town
+                                manager.startTown = town
                             }
                             coordinator.push(page: .stationChoose)
                         } else if let station = destination as? Station {
                             if isDestination {
-                                travelRoutingViewModel.destinationStation = station
+                                manager.destinationStation = station
                             } else {
-                                travelRoutingViewModel.startStation = station
+                                manager.startStation = station
                             }
                             coordinator.popToRoot()
                         }
