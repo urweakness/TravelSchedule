@@ -1,9 +1,7 @@
 import SwiftUI
 import Combine
 
-@Observable
-@MainActor
-final class DragGestureObject {
+final class DragGestureObject: ObservableObject {
     
     enum PageSpec {
         case next
@@ -11,31 +9,31 @@ final class DragGestureObject {
         case none
     }
     
-    @ObservationIgnored
+	// MARK: - Internal Handlers
     var dismiss: (() -> Void)?
-    @ObservationIgnored
     var invalidateTimer: (() -> Void)?
-    @ObservationIgnored
     var performPage: ((PageSpec) -> Void)?
-    @ObservationIgnored
     var screenSize: (() -> CGSize)?
     
+	// MARK: - Private(set) Properties
     @inline(__always)
-    private(set) var verticalDragValue: CGFloat = 0 {
+	@Published private(set) var verticalDragValue: CGFloat = 0 {
         didSet {
+			isDismissing = verticalDragValue > minimalDragThreshold
             verticalDragValueSubject.send(verticalDragValue)
-            isDismissing = verticalDragValue > 0
         }
     }
+	
+	// MARK: - Internal Constants
     let verticalDragValueSubject = PassthroughSubject<CGFloat, Never>()
     
-    @ObservationIgnored
+	// MARK: - Private Properties
     private var isDismissing: Bool = false
+	private var cancellables = Set<AnyCancellable>()
 
+	// MARK: - Private Constants
+	private let minimalDragThreshold: CGFloat = 20
     private let velocityThreshold: CGFloat = 1000
-    
-    @ObservationIgnored
-    private var cancellables = Set<AnyCancellable>()
     private let dragGestureSubject = PassthroughSubject<(_ChangedGesture<DragGesture>.Value), Never>()
     
     init() {
@@ -75,8 +73,8 @@ final class DragGestureObject {
                 let width = value.translation.width
                 let location = value.location
                 
-                if abs(width) > 24 {
-                    return width > 0 ? .prev : .next
+				if width > minimalDragThreshold || width < minimalDragThreshold {
+                    return width > minimalDragThreshold ? .prev : .next
                 }
                 
                 if location.x < screenSize.width / 2 {

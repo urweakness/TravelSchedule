@@ -15,9 +15,7 @@ final class StoriesViewModel {
     }
     var stories: [StoryModel] = []
     var currentProgressPhase: StoryAnimationPhase = .start
-    var verticalDragValue: CGFloat = 0
-	
-	var progressRunID: Int = 0
+    var progressRunID: Int = 0
 
     @ObservationIgnored
     var dismiss: DismissAction?
@@ -41,14 +39,9 @@ final class StoriesViewModel {
 	// Режим повторного просмотра: не трогаем isCheckedOut, но проигрываем всю сторис
 	@ObservationIgnored
 	private var isRewatchMode: Bool = false
-	
-	// MARK: - Private Constants
-	private let dragGestureModel = DragGestureObject()
     
 	// MARK: - Internal Init
-    init() {
-        setupGestureHandlers()
-    }
+    init() {}
 }
 
 // MARK: - StoriesViewModel Extensions
@@ -78,14 +71,8 @@ extension StoriesViewModel {
 		self.currentStoryIndex = storyIndex
 		self.currentStoryPartIndex = startPartIndex
 		
-		setupVerticalDragBinding()
-		
 		finishProgressAnimation()
 		scheduleStartProgressAfterTick(restartTimer: true)
-	}
-	
-	func makeDragGesture() -> some Gesture {
-		dragGestureModel.makeStoryGesture()
 	}
 }
 
@@ -96,7 +83,7 @@ extension StoriesViewModel {
 		dismiss?()
 	}
 	
-	private func invalidateTimer() {
+	func invalidateTimer() {
 		timer?.invalidate()
 		timer = nil
 	}
@@ -129,10 +116,6 @@ extension StoriesViewModel {
 extension StoriesViewModel {
 	var currentStory: StoryModel? {
 		stories[safe: currentStoryIndex]
-	}
-	
-	var approximatedVerticalDragValue: CGFloat {
-		screenSize.height > 0 ? verticalDragValue / screenSize.height : 0
 	}
 	
 	func progressState(for index: Int) -> (phase: StoryAnimationPhase, isAnimated: Bool) {
@@ -209,42 +192,6 @@ extension StoriesViewModel {
 
 // MARK: - Private
 
-// MARK: viewModel setting up
-private extension StoriesViewModel {
-	func setupVerticalDragBinding() {
-		dragGestureModel.verticalDragValueSubject
-			.removeDuplicates()
-			.receive(on: DispatchQueue.main)
-			.sink { [weak self] value in
-				self?.verticalDragValue = value
-			}
-			.store(in: &cancellables)
-	}
-	
-	func setupGestureHandlers() {
-		dragGestureModel.dismiss = { [weak self] in
-			self?.performDismissView()
-		}
-		dragGestureModel.invalidateTimer = { [weak self] in
-			self?.invalidateTimer()
-		}
-		dragGestureModel.performPage = { [weak self] spec in
-			guard let self else { return }
-			switch spec {
-			case .next:
-				goToNextPartOrStory()
-			case .prev:
-				goToPrevPartOrStory()
-			case .none:
-				break
-			}
-		}
-		dragGestureModel.screenSize = { [weak self] in
-			self?.screenSize ?? .zero
-		}
-	}
-}
-
 // MARK: Updating isCheckedOut status for concrete part
 private extension StoriesViewModel {
 	func setCheckedOut(storyIndex: Int, partIndex: Int, to isCheckedOut: Bool) {
@@ -310,3 +257,4 @@ private extension StoriesViewModel {
 		DispatchQueue.main.async(execute: work)
 	}
 }
+
