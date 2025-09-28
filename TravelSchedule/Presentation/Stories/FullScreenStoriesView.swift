@@ -21,7 +21,6 @@ struct FullScreenStoriesView: View {
 			StoryContentView(
 				makeStoryGesture: dragGestureModel.makeStoryGesture,
 				verticalDragValue: dragGestureModel.verticalDragValue,
-				size: geo.size
 			)
 			.environment(viewModel)
 			

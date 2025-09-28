@@ -7,6 +7,7 @@ struct UserAgreementView: View {
 	
 	// MARK: - DI States
 	@EnvironmentObject private var coordinator: Coordinator
+	@Environment(\.colorScheme) private var colorScheme: ColorScheme
 	
 	// MARK: - Body
     var body: some View {
@@ -17,7 +18,8 @@ struct UserAgreementView: View {
 			if let url = URL(string: "https://yandex.ru/legal/practicum_offer") {
 				WebViewRepresentable(
 					url: url,
-					isLoading: $isLoading
+					isLoading: $isLoading,
+					colorScheme: colorScheme
 				)
 				
 				if isLoading {

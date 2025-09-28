@@ -4,22 +4,21 @@ struct StoryContentView<G: Gesture>: View {
 	
 	private let makeStoryGesture: () -> G
 	private let verticalDragValue: CGFloat
-	private let size: CGSize
 	
 	@Environment(StoriesViewModel.self) private var viewModel
 	
 	init(
 		makeStoryGesture: @escaping () -> G,
-		verticalDragValue: CGFloat,
-		size: CGSize
+		verticalDragValue: CGFloat
 	) {
 		self.makeStoryGesture = makeStoryGesture
 		self.verticalDragValue = verticalDragValue
-		self.size = size
 	}
 	
 	@ViewBuilder
 	var body: some View {
+		let size = viewModel.screenSize
+		
 		if let currentStory = viewModel.currentStory {
 			let storyParts = currentStory.storyParts
 			let currentStoryIndex = viewModel.currentStoryIndex
