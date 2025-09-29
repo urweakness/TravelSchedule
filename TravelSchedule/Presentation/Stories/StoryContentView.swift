@@ -1,19 +1,9 @@
 import SwiftUI
 
-struct StoryContentView<G: Gesture>: View {
+struct StoryContentView: View {
 	
-	private let makeStoryGesture: () -> G
-	private let verticalDragValue: CGFloat
-	
+	@StateObject private var dragGestureModel = DragGestureObject()
 	@Environment(StoriesViewModel.self) private var viewModel
-	
-	init(
-		makeStoryGesture: @escaping () -> G,
-		verticalDragValue: CGFloat
-	) {
-		self.makeStoryGesture = makeStoryGesture
-		self.verticalDragValue = verticalDragValue
-	}
 	
 	@ViewBuilder
 	var body: some View {
@@ -35,11 +25,12 @@ struct StoryContentView<G: Gesture>: View {
 								storyPartsCount: currentStory.storyParts.count
 							)
 						}
-						.offset(y: verticalDragValue)
-						.scaleEffect(1 - (verticalDragValue / (size.height)))
+						.offset(y: dragGestureModel.verticalDragValue)
+						.scaleEffect(1 - (dragGestureModel.verticalDragValue / (size.height)))
 						.animation(
-							verticalDragValue == 0 ? .linear(duration: 0.15) : nil,
-							value: verticalDragValue
+							dragGestureModel.verticalDragValue == 0 ?
+								.linear(duration: 0.15) : nil,
+							value: dragGestureModel.verticalDragValue
 						)
 						.animation(.default, value: currentPartIndex)
 						.animation(.default, value: currentStoryIndex)
@@ -49,8 +40,37 @@ struct StoryContentView<G: Gesture>: View {
 					height: size.height,
 					alignment: .center
 				)
-				.gesture(makeStoryGesture())
+				.onAppear(perform: setupDragModelBindings)
+				.gesture(dragGestureModel.makeStoryGesture())
 			}
+		}
+	}
+}
+
+
+// MARK: - StoryView Extensions
+// MARK: Private Methods
+private extension StoryContentView {
+	func setupDragModelBindings() {
+		dragGestureModel.dismiss = { [weak viewModel] in
+			viewModel?.performDismissView()
+		}
+		dragGestureModel.invalidateTimer = { [weak viewModel] in
+			viewModel?.invalidateTimer()
+		}
+		dragGestureModel.performPage = { [weak viewModel] spec in
+			guard let viewModel else { return }
+			switch spec {
+			case .none:
+				break
+			case .next:
+				viewModel.goToNextPartOrStory()
+			case .prev:
+				viewModel.goToPrevPartOrStory()
+			}
+		}
+		dragGestureModel.screenSize = { [viewModel] in
+			viewModel.screenSize
 		}
 	}
 }

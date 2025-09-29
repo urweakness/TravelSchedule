@@ -4,7 +4,6 @@ struct FullScreenStoriesView: View {
     
     // MARK: - State Private Properties
     @State private var viewModel = StoriesViewModel()
-	@StateObject private var dragGestureModel = DragGestureObject()
     
     // MARK: - DI States
     @Environment(StoriesManager.self) private var manager
@@ -18,17 +17,11 @@ struct FullScreenStoriesView: View {
             makeBackgroundView(size: geo.size)
                 .onAppear { performStoriesManager(size: geo.size) }
             
-			StoryContentView(
-				makeStoryGesture: dragGestureModel.makeStoryGesture,
-				verticalDragValue: dragGestureModel.verticalDragValue,
-			)
-			.environment(viewModel)
+			StoryContentView()
+				.environment(viewModel)
 			
         }
 		.preferredColorScheme(.dark)
-		.onAppear {
-			setupDragModelBindings()
-		}
         // Sync local VM changes with shared StoriesManager
         .onChange(of: viewModel.stories) { _, updated in
             manager.apply(updatedStories: updated)
@@ -53,36 +46,12 @@ private extension FullScreenStoriesView {
             stories: stories
         )
     }
-    
-    func setupDragModelBindings() {
-        dragGestureModel.dismiss = { [weak viewModel] in
-            viewModel?.performDismissView()
-        }
-        dragGestureModel.invalidateTimer = { [weak viewModel] in
-            viewModel?.invalidateTimer()
-        }
-        dragGestureModel.performPage = { [weak viewModel] spec in
-            guard let viewModel else { return }
-            switch spec {
-            case .none:
-                break
-            case .next:
-                viewModel.goToNextPartOrStory()
-            case .prev:
-                viewModel.goToPrevPartOrStory()
-            }
-        }
-        dragGestureModel.screenSize = { [viewModel] in
-            viewModel.screenSize
-        }
-    }
 }
 
 // MARK: Private Views
 private extension FullScreenStoriesView {
 	func makeBackgroundView(size: CGSize) -> some View {
 		Color.travelWhite
-			.opacity(1.0 - dragGestureModel.approximated)
 			.ignoresSafeArea()
 	}
 }
