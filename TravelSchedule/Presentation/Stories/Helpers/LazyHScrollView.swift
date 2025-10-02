@@ -1,20 +1,27 @@
+import SwiftUI
+
 struct LazyHScrollView<Content: View>: View {
 	
-	let fakeCurrentStoryIndex: Int
+	// --- binding properties ---
 	@Binding var yDragOffset: CGFloat
 	var isScrolling: Binding<Bool>
+	
+	// --- internal constants ---
+	let fakeCurrentStoryIndex: Int
 	let storyDidShow: (Int) -> Void
 	let animateContentTransition: Bool
 	let handleTouch: (CGFloat, CGFloat) -> Void
 	let alignemnt: VerticalAlignment = .center
 	let spacing: CGFloat? = 0
-	let content: (ScrollViewProxy) -> Content
+	let content: () -> Content
 	
-	private let yVelocityThreshold: CGFloat = 1000
+	// --- private constants ---
 	private let coordinateSpaceName = UUID()
 	
+	// --- envs ---
 	@Environment(\.dismiss) private var dismiss
 	
+	// --- body ---
 	var body: some View {
 		GeometryReader {
 			let size = $0.size
@@ -25,47 +32,16 @@ struct LazyHScrollView<Content: View>: View {
 						alignment: alignemnt,
 						spacing: spacing,
 						content: {
-							content(proxy)
+							content()
 								.frame(width: size.width)
-								.scrollTransition { visualContent, phase in
-									visualContent
-										.rotation3DEffect(
-											.degrees(phase.isIdentity ? 0 : phase.value * 45),
-											axis: (x: 0, y: -1, z: 0)
-										)
-										.offset(x: -phase.value * size.width / 8)
-								}
+								.applyScrollTransition(size: size)
 								.overlay(alignment: .bottom) {
-									PanGestureOverlay(
-										onChange: { height in
-											guard !isScrolling.wrappedValue else { return }
-											yDragOffset = max(0, min(height, size.height * 0.3))
-										},
-										onEnd: { xPos, yVelocity in
-											// --- reset yDragOffset value ---
-											
-											defer {
-												withAnimation(
-													.easeIn(duration: CGFloat.yDragOffsetAnimationTime)
-												) {
-													yDragOffset = 0
-												}
-											}
-											
-											if yVelocity >= yVelocityThreshold || yDragOffset ~= size.height * 0.3 {
-												dismiss()
-											}
-											
-											// --- touches only ---
-											guard
-												!isScrolling.wrappedValue,
-												xPos > 0
-											else { return }
-											handleTouch(size.width, xPos)
-										}
+									PanGestureOverlayView(
+										size: size,
+										isScrolling: isScrolling,
+										yDragOffset: $yDragOffset,
+										handleTouch: handleTouch
 									)
-									.frame(height: size.height * 0.88)
-									.allowsHitTesting(!isScrolling.wrappedValue)
 								}
 						}
 					)
@@ -75,24 +51,67 @@ struct LazyHScrollView<Content: View>: View {
 						pageWidth: size.width,
 						coordinateSpace: .named(coordinateSpaceName)
 					) { page in
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							storyDidShow(page)
-						}
+						scrollPageDidChange(to: page)
 					}
 					
 				}
+				.applyScrollSettings()
 				.scrollDisabled(yDragOffset > 0)
 				.coordinateSpace(.named(coordinateSpaceName))
-				.scrollIndicators(.hidden)
-				.scrollTargetBehavior(.paging)
-				.onChange(of: fakeCurrentStoryIndex) { oldValue, newValue in
-					withAnimation(animateContentTransition ? .easeInOut(duration: 0.3) : nil) {
-						proxy.scrollTo(newValue, anchor: .center)
-					}
+				.onChange(of: fakeCurrentStoryIndex) { _, newValue in
+					fakeIndexDidChange(
+						to: newValue,
+						proxy: proxy
+					)
 				}
 			}
 			.offset(y: yDragOffset)
 			.scaleEffect(1 - (yDragOffset / size.height))
 		}
+	}
+}
+
+// MARK: - LazyHScrollView Extensions
+// MARK: Private
+
+// --- helpers ---
+private extension LazyHScrollView {
+	func scrollPageDidChange(to page: Int) {
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+			storyDidShow(page)
+		}
+	}
+	
+	func fakeIndexDidChange(
+		to index: Int,
+		proxy: ScrollViewProxy
+	) {
+		withAnimation(animateContentTransition ? .easeInOut(duration: 0.3) : nil) {
+			proxy.scrollTo(index, anchor: .center)
+		}
+	}
+}
+
+// MARK: - View Extensions
+// MARK: Private
+
+// --- incapsulation ---
+private extension View {
+	func applyScrollSettings() -> some View {
+		self
+			.scrollIndicators(.hidden)
+			.scrollTargetBehavior(.paging)
+	}
+	
+	func applyScrollTransition(size: CGSize) -> some View {
+		self
+			.scrollTransition { visualContent, phase in
+				visualContent
+					.rotation3DEffect(
+						.degrees(phase.isIdentity ? 0 : phase.value * 45),
+						axis: (x: 0, y: -1, z: 0)
+					)
+					.offset(x: -phase.value * size.width / 8)
+			}
 	}
 }
