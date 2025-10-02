@@ -1,3 +1,5 @@
+import SwiftUI
+
 struct ProgressBar: View {
 	
 	// MARK: - Private(set) Properties
