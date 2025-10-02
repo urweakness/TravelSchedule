@@ -30,7 +30,7 @@ extension CoordinatorView {
         
         switch appManager.appState {
         case .stage:
-            storiesManager = StoriesManager(stories: stubStories)
+            storiesManager = StoriesManager(stories: mockStories)
         case .prod:
             storiesManager = StoriesManager()
         }
