@@ -37,7 +37,7 @@ struct StoryPartModel: Identifiable, Equatable {
 struct StoryModel: Identifiable, Equatable {
     let id: String
     let previewImageResource: ImageResource
-    let storyParts: [StoryPartModel]
+    var storyParts: [StoryPartModel]
     
 	// MARK: Explicit init with id (default: new id will generate initially)
     init(
