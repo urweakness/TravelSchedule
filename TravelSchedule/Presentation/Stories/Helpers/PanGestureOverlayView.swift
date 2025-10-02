@@ -1,3 +1,5 @@
+import SwiftUI
+
 struct PanGestureOverlayView: View {
 	
 	let size: CGSize
