@@ -2,15 +2,10 @@ import SwiftUI
 
 struct StoryPartView: View {
 	
-	// MARK: - Private Constants
-    private let storyPart: StoryPartModel
-	
-	// MARK: - Internal Init
-	init(storyPart: StoryPartModel) {
-		self.storyPart = storyPart
-	}
+	// --- internal constants ---
+    let storyPart: StoryPartModel
     
-	// MARK: - Body
+	// --- body ---
     var body: some View {
         imageView
             .overlay(alignment: .bottom) {
@@ -20,8 +15,9 @@ struct StoryPartView: View {
 }
 
 // MARK: - StoryPartView Extensions
+// MARK: Private
 
-// MARK: - Private Views
+// --- subviews ---
 private extension StoryPartView {
     var storyDescription: some View {
         VStack(spacing: 16) {
