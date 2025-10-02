@@ -1,7 +1,11 @@
+import SwiftUI
+
 struct PanGestureOverlay: UIViewRepresentable {
+	// --- internal properties ---
 	var onChange: (CGFloat) -> Void
 	var onEnd: (CGFloat, CGFloat) -> Void
 	
+	// MARK: - View Life Cycles
 	func makeUIView(context: Context) -> some UIView {
 		let view = UIView()
 		
@@ -28,18 +32,29 @@ struct PanGestureOverlay: UIViewRepresentable {
 	func makeCoordinator() -> Coordinator {
 		Coordinator(onChange: onChange, onEnd: onEnd)
 	}
-	
+}
+
+// MARK: - PanGestureOverlay Extensions
+// MARK: Internal
+
+// --- Coordinator ---
+extension PanGestureOverlay {
 	final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+		
+		// --- internal properties ---
 		var onChange: (CGFloat) -> Void
 		var onEnd: (CGFloat, CGFloat) -> Void
 		
+		// --- internal init ---
 		init(
 			onChange: @escaping (CGFloat) -> Void,
 			onEnd: @escaping (CGFloat, CGFloat) -> Void) {
-			self.onChange = onChange
-			self.onEnd = onEnd
-		}
+				self.onChange = onChange
+				self.onEnd = onEnd
+			}
 		
+		// --- gesture handlers ---
+		// pan gesture
 		@objc func handlePan(_ gesture: UIPanGestureRecognizer) {
 			switch gesture.state {
 			case .changed:
@@ -53,6 +68,7 @@ struct PanGestureOverlay: UIViewRepresentable {
 			}
 		}
 		
+		// tap gesture
 		@objc func handleTap(_ gesture: UITapGestureRecognizer) {
 			switch gesture.state {
 			case .ended:
@@ -63,6 +79,7 @@ struct PanGestureOverlay: UIViewRepresentable {
 			}
 		}
 		
+		// UIGestureRecognizerDelegate methods
 		func gestureRecognizer(
 			_ gestureRecognizer: UIGestureRecognizer,
 			shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
