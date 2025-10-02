@@ -64,7 +64,7 @@ extension Coordinator {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
         case .story:
-            FullScreenStoriesView()
+			FullScreenStoriesView()
 				.environment(dependencies.storiesManager)
             
         case .error(let errorKind):

@@ -5,7 +5,7 @@ enum GlobalConstants {
 
 
 let templateText = "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text"
-let stubStories: [StoryModel] = [
+let mockStories: [StoryModel] = [
 	.init(
 		previewImageResource: ._1PreviewIllustration,
 		storyParts: [
