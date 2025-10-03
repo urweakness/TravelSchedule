@@ -28,17 +28,20 @@ struct FullScreenStoriesView: View {
             fakeCurrentStoryIndex: viewModel.currentStoryIndex,
             storyDidShow: { idx in viewModel.setCurrentStory(index: idx) },
             animateContentTransition: animateContentTransition,
-            handleTouch: handleTouch
+			handleTouch: viewModel.handleTouch
         ) {
             ForEach(
                 Array(viewModel.stories.enumerated()),
                 id: \.element.id
             ) { index, story in
+				
+				let data = viewModel.dataForStoryContentView(index: index, story: story)
+				
                 StoryContentView(
-                    story: story,
-                    showProgress: index == viewModel.currentStoryIndex,
-                    currentStoryPartIndex: index == viewModel.currentStoryIndex ? viewModel.currentStoryPartIndex : 0,
-                    progress: index == viewModel.currentStoryIndex ? progressForCurrentStoryProgress(for: story) : 0
+					story: story,
+					showProgress: data.showProgress,
+					currentStoryPartIndex: data.currentStoryPartIndex,
+					progress: data.progress
                 )
                 .id(index)
             }
@@ -85,28 +88,28 @@ struct FullScreenStoriesView: View {
 // MARK: - FullScreenStoriesView Extensions
 // --- private helpers ---
 private extension FullScreenStoriesView {
-	func handleTouch(_ screenWidth: CGFloat, _ xPos: CGFloat) {
-		if xPos >= screenWidth / 2 {
-			viewModel.performNextStoryPart()
-		} else {
-			viewModel.performPrevStoryPart()
-		}
-	}
-	
-	func progressForCurrentStoryProgress(for story: StoryModel) -> CGFloat {
-		let count = max(1, story.storyParts.count) // --- safe ---
-		let partIndex = viewModel.currentStoryPartIndex
-		let partProgress = viewModel.timer.progress
-		var result: CGFloat = 0
-		for i in 0..<count {
-			if i < partIndex {
-				result += 1
-			} else if i == partIndex {
-				result += partProgress
-			}
-		}
-		return result / CGFloat(count)
-	}
+//	func handleTouch(_ screenWidth: CGFloat, _ xPos: CGFloat) {
+//		if xPos >= screenWidth / 2 {
+//			viewModel.performNextStoryPart()
+//		} else {
+//			viewModel.performPrevStoryPart()
+//		}
+//	}
+//	
+//	func progressForCurrentStoryProgress(for story: StoryModel) -> CGFloat {
+//		let count = max(1, story.storyParts.count) // --- safe ---
+//		let partIndex = viewModel.currentStoryPartIndex
+//		let partProgress = viewModel.timer.progress
+//		var result: CGFloat = 0
+//		for i in 0..<count {
+//			if i < partIndex {
+//				result += 1
+//			} else if i == partIndex {
+//				result += partProgress
+//			}
+//		}
+//		return result / CGFloat(count)
+//	}
 }
 
 // MARK: - Dummy StoriesManagerProtocol implementation
