@@ -14,12 +14,6 @@ let mockStories: [StoryModel] = [
 				title: templateText,
 				description: templateText,
 				isCheckedOut: false
-			),
-			.init(
-				fullImageResource: ._12BigIllustration,
-				title: templateText,
-				description: templateText,
-				isCheckedOut: false
 			)
 		]
 	),
@@ -34,6 +28,12 @@ let mockStories: [StoryModel] = [
 			),
 			.init(
 				fullImageResource: ._22BigIllustration,
+				title: templateText,
+				description: templateText,
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._81BigIllustration,
 				title: templateText,
 				description: templateText,
 				isCheckedOut: false
