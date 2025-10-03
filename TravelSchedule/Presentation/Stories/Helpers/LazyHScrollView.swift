@@ -72,9 +72,7 @@ struct LazyHScrollView<Content: View>: View {
 }
 
 // MARK: - LazyHScrollView Extensions
-// MARK: Private
-
-// --- helpers ---
+// --- private helpers ---
 private extension LazyHScrollView {
 	func scrollPageDidChange(to page: Int) {
 		DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -93,9 +91,7 @@ private extension LazyHScrollView {
 }
 
 // MARK: - View Extensions
-// MARK: Private
-
-// --- incapsulation ---
+// --- private incapsulation ---
 private extension View {
 	func applyScrollSettings() -> some View {
 		self
