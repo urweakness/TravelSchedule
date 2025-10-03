@@ -64,7 +64,7 @@ struct FullScreenStoriesView: View {
         .onDisappear {
             viewModel.timer.stop()
         }
-		// --- user interaction
+		// --- user interaction ---
 		// --- called when next page position stopped and centered ---
 		.onChange(of: isScrolling) {
 			if isScrolling {
@@ -83,33 +83,6 @@ struct FullScreenStoriesView: View {
 			}
 		}
     }
-}
-
-// MARK: - FullScreenStoriesView Extensions
-// --- private helpers ---
-private extension FullScreenStoriesView {
-//	func handleTouch(_ screenWidth: CGFloat, _ xPos: CGFloat) {
-//		if xPos >= screenWidth / 2 {
-//			viewModel.performNextStoryPart()
-//		} else {
-//			viewModel.performPrevStoryPart()
-//		}
-//	}
-//	
-//	func progressForCurrentStoryProgress(for story: StoryModel) -> CGFloat {
-//		let count = max(1, story.storyParts.count) // --- safe ---
-//		let partIndex = viewModel.currentStoryPartIndex
-//		let partProgress = viewModel.timer.progress
-//		var result: CGFloat = 0
-//		for i in 0..<count {
-//			if i < partIndex {
-//				result += 1
-//			} else if i == partIndex {
-//				result += partProgress
-//			}
-//		}
-//		return result / CGFloat(count)
-//	}
 }
 
 // MARK: - Dummy StoriesManagerProtocol implementation
