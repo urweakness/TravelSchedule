@@ -3,8 +3,8 @@ import SwiftUI
 struct StoriesPreviewView: View {
     
 	// --- envs ---
-    @Environment(StoriesManager.self) private var manager
-    @EnvironmentObject private var coordinator: Coordinator
+	@Bindable var manager: StoriesManager
+	let present: (FullScreenCover) -> Void
     
     // --- body ---
     var body: some View {
@@ -29,6 +29,6 @@ struct StoriesPreviewView: View {
     private func openStory(withID storyUUIDString: String) {
         let storyIndex = manager.stories.firstIndex(where: { $0.id == storyUUIDString }) ?? 0
         manager.currentStoryIndex = storyIndex
-        coordinator.present(fullScreenCover: .story)
+		present(.story)
     }
 }
