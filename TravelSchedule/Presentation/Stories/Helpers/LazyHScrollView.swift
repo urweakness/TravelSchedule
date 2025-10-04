@@ -7,7 +7,7 @@ struct LazyHScrollView<Content: View>: View {
 	var isScrolling: Binding<Bool>
 	
 	// --- internal constants ---
-	let fakeCurrentStoryIndex: Int
+	let storyIndex: Int
 	let storyDidShow: (Int) -> Void
 	let animateContentTransition: Bool
 	let handleTouch: (CGFloat, CGFloat) -> Void
@@ -58,11 +58,20 @@ struct LazyHScrollView<Content: View>: View {
 				.applyScrollSettings()
 				.scrollDisabled(yDragOffset > 0)
 				.coordinateSpace(.named(coordinateSpaceName))
-				.onChange(of: fakeCurrentStoryIndex) { _, newValue in
-					fakeIndexDidChange(
+				.onChange(of: storyIndex) { _, newValue in
+					storyIndexDidChange(
 						to: newValue,
 						proxy: proxy
 					)
+				}
+				// --- scroll to current on appear ---
+				.onAppear {
+					DispatchQueue.main.async {
+						storyIndexDidChange(
+							to: storyIndex,
+							proxy: proxy
+						)
+					}
 				}
 			}
 			.offset(y: yDragOffset)
@@ -80,7 +89,7 @@ private extension LazyHScrollView {
 		}
 	}
 	
-	func fakeIndexDidChange(
+	func storyIndexDidChange(
 		to index: Int,
 		proxy: ScrollViewProxy
 	) {
