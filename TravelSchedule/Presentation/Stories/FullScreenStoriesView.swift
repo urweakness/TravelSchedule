@@ -9,23 +9,22 @@ struct FullScreenStoriesView: View {
 	@State private var yDragOffset: CGFloat = 0
 
 	// --- envs ---
-	@Environment(StoriesManager.self) private var manager
     @Environment(\.dismiss) private var dismiss
 
 	// --- raw init ---
-    init() {
-        // --- viewModel will be initialized in .onAppear ---
+	init(manager: StoriesManager) {
 		_viewModel = State(
-			wrappedValue: StoriesViewModel(manager: DummyStoriesManager())
+			wrappedValue: StoriesViewModel(manager: manager)
 		)
     }
 
 	// --- body ---
     var body: some View {
+		
         LazyHScrollView(
 			yDragOffset: $yDragOffset,
 			isScrolling: $isScrolling,
-            fakeCurrentStoryIndex: viewModel.currentStoryIndex,
+			storyIndex: viewModel.currentStoryIndex,
             storyDidShow: { idx in viewModel.setCurrentStory(index: idx) },
             animateContentTransition: animateContentTransition,
 			handleTouch: viewModel.handleTouch
@@ -53,7 +52,6 @@ struct FullScreenStoriesView: View {
         }
         .onAppear {
 			// --- lazy manager init ---
-			viewModel = StoriesViewModel(manager: manager)
 			viewModel.dismiss = dismiss
             viewModel.timer.start()
 			
@@ -83,15 +81,4 @@ struct FullScreenStoriesView: View {
 			}
 		}
     }
-}
-
-// MARK: - Dummy StoriesManagerProtocol implementation
-fileprivate final class DummyStoriesManager: StoriesManagerProtocol {
-	private(set) var stories = [StoryModel]()
-	var currentStoryIndex: Int = 0
-	
-	func setStoryPartCheckedOutStatus(
-		currentStoryIndex: Int,
-		currentStoryPartIndex: Int,
-	) {}
 }
