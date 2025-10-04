@@ -1,17 +1,18 @@
 import Combine
 import SwiftUI
 
+@MainActor
 final class TravelPointChooseViewModel<D: TravelPoint>: ObservableObject {
 	
-	// MARK: - Private Constants
+	// --- private constants ---
     private let travelPoints = D.allCases
 
-	// MARK: - Published States
+	// --- publishers ---
 	// init filteredObject with all points (to avoid initial debounce delay)
     @Published private(set) var filteredObjects: [D]
     @Published var searchText: String = ""
 
-	// MARK: - Private Properties
+	// --- private properties ---
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -20,7 +21,7 @@ final class TravelPointChooseViewModel<D: TravelPoint>: ObservableObject {
         setupBindings()
     }
 
-	// MARK: - Private Methods
+	// --- private methods ---
     private func setupBindings() {
         $searchText
             .debounce(for: 0.3, scheduler: DispatchQueue.main)
