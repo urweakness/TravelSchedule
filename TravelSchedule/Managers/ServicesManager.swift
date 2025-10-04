@@ -1,7 +1,7 @@
 import OpenAPIURLSession
 import SwiftUI
 
-final class ServicesManager {
+final actor ServicesManager {
     enum ServiceError: Error {
         case stationListError(String)
         case threadStationsError(String)
@@ -18,6 +18,8 @@ final class ServicesManager {
 }
 
 extension ServicesManager {
+		
+	// --- getStationsList ---
     func getStationsList(format: Format = .json) async throws -> AllStationsResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
@@ -28,17 +30,16 @@ extension ServicesManager {
                 apiKey: apiKey
             )
             
-            let stationList = try await stationsListService.getAllStations()
-            
-            return stationList
+            async let stationList = stationsListService.getAllStations()
+            return try await stationList
+			
         } catch {
             throw ServiceError.stationListError(error.localizedDescription)
         }
     }
     
-    
-    
-    func showThreadStations() async  {
+	// --- getThreadStations ---
+	func getThreadStations(by uid: String) async throws -> ThreadStationsResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             
@@ -47,17 +48,18 @@ extension ServicesManager {
                 apiKey: GlobalConstants.apiKey
             )
             
-            let threadStations = try await threadStationsService.getThreadStations(
-                uid: "SU-1484_250826_c26_12"
+            async let threadStations = threadStationsService.getThreadStations(
+                uid: uid
             )
-            
-            print("THREAD STATIONS --> ", threadStations)
+			return try await threadStations
+			
         } catch {
-            print("An error occurred --> \(error)\n")
+			throw ServiceError.threadStationsError(error.localizedDescription)
         }
     }
     
-    func showStationSchedule() async {
+	// --- getStationSchedule ---
+	func getStationSchedule(station: String) async throws -> ScheduleResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             
@@ -66,17 +68,22 @@ extension ServicesManager {
                 apiKey: GlobalConstants.apiKey
             )
             
-            let stationSchedule = try await stationScheduleService.getStationSchedule(
-                station: "s9600213"
+            async let stationSchedule = stationScheduleService.getStationSchedule(
+				station: station
             )
-            
-            print("STATION SCHEDULE --> ", stationSchedule)
+			return try await stationSchedule
+			
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.stationScheduleError(error.localizedDescription)
         }
     }
     
-    func showNearestStations() async {
+	// --- getNearestStations ---
+	func getNearestStations(
+		lat: Double,
+		lng: Double,
+		distance: Int
+	) async throws -> NearestStations {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
@@ -86,40 +93,45 @@ extension ServicesManager {
                 apiKey: apiKey
             )
             
-            let stations = try await nearestStationsService.getNearestStations(
-                lat: 59.864177,
-                lng: 30.319163,
-                distance: 50
+            async let stations = nearestStationsService.getNearestStations(
+				lat: lat,
+				lng: lng,
+				distance: distance
             )
-            
-            print("STATIONS --> ", stations, "\n")
+			return try await stations
+			
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.nearestStationsError(error.localizedDescription)
         }
     }
     
-    func showSegments() async {
+	// --- getScheduleBetweenStations ---
+	func getScheduleBetweenStations(
+		from: String,
+		to: String
+	) async throws -> ScheduleBetweenStationsResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
             
-            let segmentsService = SegmentsService(
+            let segmentsService = ScheduleBetweenStationsService(
                 client: client,
                 apiKey: apiKey
             )
              
-            let search = try await segmentsService.search(
-                from: "s9600213",
-                to: "c146"
+            async let search = segmentsService.search(
+                from: from,
+				to: to
             )
-            
-            print("SEARCH --> ", search, "\n")
+			return try await search
+			
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.segmentsError(error.localizedDescription)
         }
     }
     
-    func showCopyright() async {
+	// --- getCopyright ---
+	func getCopyright() async throws -> CopyrightResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
@@ -128,16 +140,19 @@ extension ServicesManager {
                 client: client,
                 apiKey: apiKey
             )
-             
-            let copyright = try await copyrightService.getCopyright()
-            
-            print("COPYRIGHT --> ", copyright, "\n")
+            async let copyright = copyrightService.getCopyright()
+			return try await copyright
+			
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.copyrightError(error.localizedDescription)
         }
     }
     
-    func showNearestCity() async {
+	// --- getNearestCity ---
+    func getNearestCity(
+		lat: Double,
+		lng: Double
+	) async throws -> NearestCityResponse {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
@@ -147,18 +162,22 @@ extension ServicesManager {
                 apiKey: apiKey
             )
             
-            let nearestCity = try await nearestSettlementService.getNearestCity(
-                lat: 59.864177,
-                lng: 30.319163
+            async let nearestCity = nearestSettlementService.getNearestCity(
+				lat: lat,
+                lng: lng
             )
+			return try await nearestCity
             
-            print("NEAREST CITY --> ", nearestCity, "\n")
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.nearestCityError(error.localizedDescription)
         }
     }
     
-    func showCarrierInfo() async {
+	// --- getCarrierInfo ---
+	func getCarrierInfo(
+		carrierCode: String,
+		codingSystem: CodingSystem
+	) async throws -> CarrierJsonPayload {
         do {
             let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
             let apiKey = GlobalConstants.apiKey
@@ -168,14 +187,14 @@ extension ServicesManager {
                 apiKey: apiKey
             )
 
-            let carrierInfo = try await carrierService.getCarrierInfo(
-                code: "TK",
-                system: .iata
+            async let carrierInfo = carrierService.getCarrierInfo(
+				code: carrierCode,
+				system: codingSystem
             )
+			return try await carrierInfo
 
-            print("CARRIER --> ", carrierInfo, "\n")
         } catch {
-            print("An error occurred --> \(error)\n")
+            throw ServiceError.carrierInfoError(error.localizedDescription)
         }
     }
 }
