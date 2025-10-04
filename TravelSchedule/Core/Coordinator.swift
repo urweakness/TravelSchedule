@@ -1,17 +1,27 @@
 import SwiftUI
 
+@MainActor
+@Observable
 final class Coordinator: ObservableObject {
-    @Published var path = NavigationPath()
-    @Published var selectedTab: Int = 0
-    @Published var fullScreenCover: FullScreenCover?
-	@Published private(set) var navigationTitle = ""
-    @Published private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    var path = NavigationPath()
+    var selectedTab: Int = 0
+	var fullScreenCover: FullScreenCover?
+	private(set) var navigationTitle = ""
+    private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
     
-    private let dependencies: AppDependencies
+    let dependencies: AppDependencies
     
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
+	
+	func navigationPath(_ block: @Sendable (NavigationPath) -> Void) {
+		block(path)
+	}
+	
+	func setNavPath(_ path: NavigationPath) {
+		self.path = path
+	}
 }
 
 // MARK: - Coordinator Extensions
@@ -22,38 +32,76 @@ extension Coordinator {
     func build(page: Page) -> some View {
         switch page {
         case .tabView:
-            TravelTabView()
+            TravelTabView(coordinator: self)
             
         case .main:
-            MainView(manager: dependencies.travelManager)
+            MainView(
+				manager: dependencies.travelManager,
+				coordinator: self
+			)
             
         case .routing:
-            RoutingView(manager: dependencies.travelManager)
+            RoutingView(
+				manager: dependencies.travelManager,
+				push: push
+			)
         
         case .settings:
-            SettingsView()
+			SettingsView(push: push)
             
         case .storiesPreview:
-            StoriesPreviewView()
-				.environment(dependencies.storiesManager)
+			StoriesPreviewView(
+				manager: dependencies.storiesManager,
+				present: present
+			)
         
         case .townChoose:
-            TravelPointChooseView<Town>(manager: dependencies.travelManager)
+            TravelPointChooseView<Town>(
+				manager: dependencies.travelManager,
+				push: push,
+				pop: pop,
+				popToRoot: popToRoot,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .stationChoose:
-            TravelPointChooseView<Station>(manager: dependencies.travelManager)
+            TravelPointChooseView<Station>(
+				manager: dependencies.travelManager,
+				push: push,
+				pop: pop,
+				popToRoot: popToRoot,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .userAgreement:
-            UserAgreementView()
+			UserAgreementView(
+				pop: pop,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .carriersChoose:
-            CarriersListView(manager: dependencies.travelManager)
+            CarriersListView(
+				manager: dependencies.travelManager,
+				push: push,
+				pop: pop
+			)
             
         case .filtration:
-            FiltrationView(manager: dependencies.travelManager)
+            FiltrationView(
+				manager: dependencies.travelManager,
+				pop: pop
+			)
             
         case .carrierInfo:
-            CarrierInfoView(manager: dependencies.travelManager)
+			CarrierInfoView(
+				manager: dependencies.travelManager,
+				pop: pop,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
 		
         default:
             EmptyView()
@@ -64,8 +112,7 @@ extension Coordinator {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
         case .story:
-			FullScreenStoriesView()
-				.environment(dependencies.storiesManager)
+			FullScreenStoriesView(manager: dependencies.storiesManager)
             
         case .error(let errorKind):
             ErrorView(kind: errorKind)
