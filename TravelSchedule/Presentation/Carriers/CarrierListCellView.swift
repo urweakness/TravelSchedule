@@ -27,31 +27,29 @@ struct CarrierListCellView: View {
                     .padding(.trailing, 14)
             }
             .overlay(alignment: .bottom) {
-                HStack(spacing: 8) {
-                    startTimeView
-                    timeDividerView
-                    deltaTimeView
-                    timeDividerView
-                    endTimeView
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
+				tripContent
             }
             .frame(height: 104)
             .task {
                 Task {
-                    let loader = DataLoader()
-                    guard let imageURL = URL(string: carrier.logoURLString) else { return }
-                    guard
-                        let data = await loader.downloadData(url: imageURL),
-                        let uiImage = UIImage(data: data)
-                    else { return }
-                    carrierLogoImage = Image(uiImage: uiImage)
+					await loadCarrierImage()
                 }
             }
     }
     
     // MARK: - Private Views
+	private var tripContent: some View {
+		HStack(spacing: 8) {
+			startTimeView
+			timeDividerView
+			deltaTimeView
+			timeDividerView
+			endTimeView
+		}
+		.padding(.horizontal, 14)
+		.padding(.bottom, 14)
+	}
+	
     @ViewBuilder
     private var carrierImageView: some View {
         if let carrierLogoImage {
@@ -110,6 +108,16 @@ struct CarrierListCellView: View {
     }
     
     // MARK: - Private Methods
+	private func loadCarrierImage() async {
+		let loader = DataLoader()
+		guard let imageURL = URL(string: carrier.logoURLString) else { return }
+		guard
+			let data = await loader.downloadData(url: imageURL),
+			let uiImage = UIImage(data: data)
+		else { return }
+		carrierLogoImage = Image(uiImage: uiImage)
+	}
+	
     private func convertInputDateString(_ dateString: String?) -> String? {
         guard let dateString else {
             return nil

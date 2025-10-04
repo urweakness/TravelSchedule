@@ -2,18 +2,26 @@ import SwiftUI
 
 struct TravelTabView: View {
     
+	// MARK: - Private States
     @State private var selectedTab: TravelTab = .main
+	
+	// MARK: - State Storage
     @AppStorage("darkThemeIsActive") private var darkThemeIsActive: Bool = false
     
+	// MARK: - DI States
+    @EnvironmentObject var coordinator: Coordinator
+    
+	// MARK: - Body
     @ViewBuilder
     var body: some View {
         TabView(selection: $selectedTab) {
-            MainView()
+            coordinator.build(page: .main)
                 .tabItem {
                     Label("", systemImage: "arrow.up.message.fill")
                 }
                 .tag(TravelTab.main)
-            SettingsView()
+			
+            coordinator.build(page: .settings)
                 .tabItem {
                     Label("", systemImage: "gearshape.fill")
                 }
@@ -22,8 +30,4 @@ struct TravelTabView: View {
         .tint(Color.travelBlack)
         .preferredColorScheme(darkThemeIsActive ? .dark : .light)
     }
-}
-
-#Preview {
-    TravelTabView()
 }

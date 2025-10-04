@@ -31,8 +31,4 @@ enum Town: TravelPoint {
     static var noContentTitleText: String {
         "Город не найден"
     }
-    
-    static var navigationTitleText: String {
-        "Выбор города"
-    }
 }

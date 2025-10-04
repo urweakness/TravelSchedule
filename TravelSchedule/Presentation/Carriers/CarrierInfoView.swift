@@ -5,6 +5,10 @@ struct CarrierInfoView: View {
     // MARK: - State Private Properties
     @State private var carrierImage: Image?
     
+	// MARK: - DI States
+    @ObservedObject var manager: TravelRoutingManager
+	@EnvironmentObject private var coordinator: Coordinator
+    
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -35,6 +39,8 @@ struct CarrierInfoView: View {
                 }
             }
         }
+		.navigationTitle(coordinator.navigationTitle)
+		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
         .customNavigationBackButton()
     }
     
@@ -118,8 +124,4 @@ struct CarrierInfoView: View {
             carrierImage = Image(uiImage: uiImage)
         }
     }
-}
-
-#Preview {
-    CarrierInfoView()
 }

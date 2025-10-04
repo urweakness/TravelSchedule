@@ -1,6 +1,6 @@
 import SwiftUI
 
-final class TravelRoutingViewModel: ObservableObject {
+final class TravelRoutingManager: ObservableObject {
     @Published var destinationTown: Town?
     @Published var destinationStation: Station?
     
@@ -13,16 +13,19 @@ final class TravelRoutingViewModel: ObservableObject {
     
     @Published var filter: FilterModel?
     
+    @inlinable
     var travelPointsFilled: Bool {
         startTown != nil && startStation != nil &&
         destinationTown != nil && destinationStation != nil
     }
     
+    @inlinable
     func swapDestinations() {
         (destinationTown, startTown) = (startTown, destinationTown)
         (destinationStation, startStation) = (startStation, destinationStation)
     }
     
+    @inlinable
     var title: String {
         "\(startTown?.name ?? "")(\(startStation?.name ?? "")) → \(destinationTown?.name ?? "")(\(destinationStation?.name ?? ""))"
     }

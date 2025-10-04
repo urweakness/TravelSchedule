@@ -27,12 +27,14 @@ struct CarriersListView: View {
     // MARK: - Private States
     @State private var carriers: [CarrierModel] = [stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier]
     
+    // MARK: - Observed Objects
+    @ObservedObject var manager: TravelRoutingManager
+    
     // MARK: - Enviroments
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
     // MARK: - Private Constants
-    private let manager = ServicesManager.shared
+    private let networkServicesManager = ServicesManager.shared
     private let overscrollBottomPadding = CarrierListOverscroll().bottomPadding
     
     // MARK: - Body
@@ -49,7 +51,7 @@ struct CarriersListView: View {
                             CarrierListCellView(carrier: carrier)
                                 .onTapGesture {
                                     #warning("TODO: set carrier before pushing info about him")
-                                    travelRoutingViewModel.choosedCarrier = ""
+                                    manager.choosedCarrier = ""
                                     coordinator.push(page: .carrierInfo)
                                 }
                         }
@@ -77,7 +79,7 @@ struct CarriersListView: View {
     
     // MARK: - Private Views
     private var titleView: some View {
-        Text(travelRoutingViewModel.title)
+        Text(manager.title)
             .font(.bold24)
             .foregroundStyle(.travelBlack)
     }
@@ -97,10 +99,4 @@ struct CarriersListView: View {
     private func loadCarriers() async {
         #warning("TODO: load carriers using (travelRoutingManager.filter)")
     }
-}
-
-#Preview {
-    CarriersListView()
-        .environmentObject(Coordinator())
-        .environmentObject(TravelRoutingViewModel())
 }

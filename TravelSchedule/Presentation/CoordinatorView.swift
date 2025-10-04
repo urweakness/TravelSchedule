@@ -1,15 +1,13 @@
 import SwiftUI
 
 struct CoordinatorView: View {
-    
-    @StateObject private var coordinator = Coordinator()
-    @StateObject private var appManager = AppManager()
-    @StateObject private var storiesViewModel = StoriesViewModel()
-    @StateObject private var travelRoutingViewModel = TravelRoutingViewModel()
+	
+	// MARK: - Private States
+    @StateObject private var coordinator: Coordinator
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {
-            coordinator.build(page: .main)
+            coordinator.build(page: .tabView)
                 .navigationDestination(for: Page.self) { page in
                     coordinator.build(page: page)
                 }
@@ -17,24 +15,34 @@ struct CoordinatorView: View {
                     coordinator.build(fullScreenCover: fullScreenCover)
                 }
         }
-        .navigationBarBackButtonHidden()
-        .navigationTitle(coordinator.navigationTitle)
-        .navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
-        .environmentObject(coordinator)
-        .environmentObject(storiesViewModel)
-        .environmentObject(travelRoutingViewModel)
-        .environmentObject(appManager)
-//        .task(priority: .background) {
-//            Task {
-//                appManager.loadingState = .fetching
-//                do {
-//                    appManager.stationList = try await ServicesManager.shared.getStationsList()
-//                    appManager.loadingState = .idle
-//                } catch {
-//                    appManager.loadingState = .error(.unknown(error))
-//                }
-//            }
-//        }
+		.navigationBarBackButtonHidden()
+		.environmentObject(coordinator)
+    }
+}
+
+// MARK: - CoordinatorView Extensions
+// MARK: Internal DI Init
+extension CoordinatorView {
+    init() {
+        let appManager = AppManager()
+        let storiesManager: StoriesManager
+        let travelManager = TravelRoutingManager()
+        
+        switch appManager.appState {
+        case .stage:
+            storiesManager = StoriesManager(stories: mockStories)
+        case .prod:
+            storiesManager = StoriesManager()
+        }
+        
+        let dependencies = AppDependencies(
+            appManager: appManager,
+            storiesManager: storiesManager,
+            travelManager: travelManager
+        )
+        _coordinator = StateObject(
+            wrappedValue: Coordinator(dependencies: dependencies)
+        )
     }
 }
 

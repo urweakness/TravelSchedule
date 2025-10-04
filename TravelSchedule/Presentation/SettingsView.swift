@@ -2,8 +2,13 @@ import SwiftUI
 
 struct SettingsView: View {
     
+	// MARK: - State Storage
     @AppStorage("darkThemeIsActive") private var theme: Bool = false
+	
+	// MARK: - DI States
+	@EnvironmentObject private var coordinator: Coordinator
     
+	// MARK: - Body
     var body: some View {
         VStack {
             themeSwitch
@@ -16,6 +21,7 @@ struct SettingsView: View {
         .animation(.linear(duration: 0.15), value: theme)
     }
     
+	// MARK: - Private Views
     private var themeSwitch: some View {
         TravelListCell(text: "Темная тема", buttonAction: nil) {
             Toggle("", isOn: $theme)
@@ -27,8 +33,9 @@ struct SettingsView: View {
         TravelListCell(
             text: "Пользовательское соглашение",
             buttonAction: {
-                
-        }) {
+				coordinator.push(page: .userAgreement)
+			}
+		) {
             Image(systemName: "chevron.right")
                 .font(.bold17)
         }
@@ -43,8 +50,4 @@ struct SettingsView: View {
         .foregroundStyle(.travelBlack)
         .padding(.bottom, 24)
     }
-}
-
-#Preview {
-    SettingsView()
 }

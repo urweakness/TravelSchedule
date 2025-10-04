@@ -1,7 +1,8 @@
 import SwiftUI
 
-// MARK: - Extensions
-// - UIFont
+// MARK: - UIFont Extensions
+
+// - Internal Static Fonts
 extension Font {
     static let regular12 = Font.system(size: 12, weight: .regular, design: .rounded)
     static let regular14 = Font.system(size: 14, weight: .regular, design: .rounded)

@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct SearchTextFieldStyle: TextFieldStyle {
+	
+	// MARK: - States
     @Binding var text: String
     @State private var isEmpty = true
     
+	// MARK: - Body
     @ViewBuilder
     func _body(configuration: TextField<Self._Label>) -> some View {
         HStack {
@@ -30,10 +33,7 @@ struct SearchTextFieldStyle: TextFieldStyle {
         }
     }
     
-    private func clear() {
-        text = ""
-    }
-    
+	// MARK: - Private views
     private var magnifyingglass: some View {
         Image(systemName: "magnifyingglass")
             .foregroundColor(.travelGray)
@@ -46,4 +46,9 @@ struct SearchTextFieldStyle: TextFieldStyle {
         }
         .transition(.opacity)
     }
+	
+	// MARK: - Private Methods
+	private func clear() {
+		text = ""
+	}
 }

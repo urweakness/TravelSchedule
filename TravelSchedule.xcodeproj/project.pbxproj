@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6E22FB2E58FAEE003C03B8 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 2D6E22FA2E58FAEE003C03B8 /* OpenAPIRuntime */; };
-		2D6E22FE2E58FB03003C03B8 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 2D6E22FD2E58FB03003C03B8 /* OpenAPIURLSession */; };
+		2D5E0EB92E85078800D87E6F /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 2D5E0EB82E85078800D87E6F /* OpenAPIRuntime */; };
+		2D5E0EBC2E85079500D87E6F /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 2D5E0EBB2E85079500D87E6F /* OpenAPIURLSession */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +38,7 @@
 		2D6E230E2E58FCBD003C03B8 /* Exceptions for "TravelSchedule" folder in "TravelSchedule" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Info.plist,
 				"OpenAPI/openapi-generator-config.yaml",
 			);
 			target = 2D6E21CC2E573F78003C03B8 /* TravelSchedule */;
@@ -81,8 +82,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6E22FE2E58FB03003C03B8 /* OpenAPIURLSession in Frameworks */,
-				2D6E22FB2E58FAEE003C03B8 /* OpenAPIRuntime in Frameworks */,
+				2D5E0EBC2E85079500D87E6F /* OpenAPIURLSession in Frameworks */,
+				2D5E0EB92E85078800D87E6F /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,8 +153,8 @@
 			);
 			name = TravelSchedule;
 			packageProductDependencies = (
-				2D6E22FA2E58FAEE003C03B8 /* OpenAPIRuntime */,
-				2D6E22FD2E58FB03003C03B8 /* OpenAPIURLSession */,
+				2D5E0EB82E85078800D87E6F /* OpenAPIRuntime */,
+				2D5E0EBB2E85079500D87E6F /* OpenAPIURLSession */,
 			);
 			productName = TravelSchedule;
 			productReference = 2D6E21CD2E573F78003C03B8 /* TravelSchedule.app */;
@@ -213,7 +214,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					2D6E21CC2E573F78003C03B8 = {
 						CreatedOnToolsVersion = 16.2;
@@ -355,6 +356,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -378,6 +380,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -418,6 +421,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -434,6 +438,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -448,9 +453,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TravelSchedule/Presentation/Preview Content\"";
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TravelSchedule/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -485,9 +490,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TravelSchedule/Presentation/Preview Content\"";
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TravelSchedule/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -519,7 +524,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -538,7 +542,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -556,7 +559,6 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = TIPT.TravelScheduleUITests;
@@ -573,7 +575,6 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 49VL494TXQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = TIPT.TravelScheduleUITests;
@@ -654,12 +655,12 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2D6E22FA2E58FAEE003C03B8 /* OpenAPIRuntime */ = {
+		2D5E0EB82E85078800D87E6F /* OpenAPIRuntime */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2D6E22F92E58FAEE003C03B8 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
 			productName = OpenAPIRuntime;
 		};
-		2D6E22FD2E58FB03003C03B8 /* OpenAPIURLSession */ = {
+		2D5E0EBB2E85079500D87E6F /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2D6E22FC2E58FB03003C03B8 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
 			productName = OpenAPIURLSession;

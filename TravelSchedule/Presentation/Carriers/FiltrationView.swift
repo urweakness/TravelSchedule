@@ -10,9 +10,11 @@ struct FiltrationView: View {
     private let departFilters: [Filter.DepartTimeFilter] = [.morning, .day, .evening, .night]
     private let transferFilters: [Bool] = [true, false]
     
+	// MARK: - DI States
+    @ObservedObject var manager: TravelRoutingManager
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
+	// MARK: - Private Getters
     private var departTimeTitle: String {
         Filter.departTime(.day).title
     }
@@ -117,16 +119,10 @@ struct FiltrationView: View {
     }
     
     private func confirmAction() {
-        travelRoutingViewModel.filter = .init(
+        manager.filter = .init(
             departFilter: selectedDepartFilters,
             transferFilter: selectedTransferFilter
         )
         coordinator.pop()
     }
-}
-
-#Preview {
-    FiltrationView()
-        .environmentObject(Coordinator())
-        .environmentObject(TravelRoutingViewModel())
 }

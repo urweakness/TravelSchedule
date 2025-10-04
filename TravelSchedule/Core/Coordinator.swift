@@ -4,41 +4,57 @@ final class Coordinator: ObservableObject {
     @Published var path = NavigationPath()
     @Published var selectedTab: Int = 0
     @Published var fullScreenCover: FullScreenCover?
-    @Published var navigationTitle = ""
-    @Published var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
+	@Published private(set) var navigationTitle = ""
+    @Published private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    
+    private let dependencies: AppDependencies
+    
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+    }
 }
 
 // MARK: - Coordinator Extensions
-// MARK: Builders
+
+// MARK: Internal Builders
 extension Coordinator {
     @ViewBuilder @preconcurrency
     func build(page: Page) -> some View {
         switch page {
-        case .main:
+        case .tabView:
             TravelTabView()
             
+        case .main:
+            MainView(manager: dependencies.travelManager)
+            
+        case .routing:
+            RoutingView(manager: dependencies.travelManager)
+        
+        case .settings:
+            SettingsView()
+            
+        case .storiesPreview:
+            StoriesPreviewView()
+				.environment(dependencies.storiesManager)
+        
         case .townChoose:
-            TravelPointChooseView(
-                travelPoints: Town.allCases
-            )
+            TravelPointChooseView<Town>(manager: dependencies.travelManager)
             
         case .stationChoose:
-            TravelPointChooseView(
-                travelPoints: Station.allCases
-            )
+            TravelPointChooseView<Station>(manager: dependencies.travelManager)
             
         case .userAgreement:
             UserAgreementView()
             
         case .carriersChoose:
-            CarriersListView()
+            CarriersListView(manager: dependencies.travelManager)
             
         case .filtration:
-            FiltrationView()
+            FiltrationView(manager: dependencies.travelManager)
             
         case .carrierInfo:
-            CarrierInfoView()
-            
+            CarrierInfoView(manager: dependencies.travelManager)
+		
         default:
             EmptyView()
         }
@@ -48,7 +64,8 @@ extension Coordinator {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
         case .story:
-            StoryView()
+			FullScreenStoriesView()
+				.environment(dependencies.storiesManager)
             
         case .error(let errorKind):
             ErrorView(kind: errorKind)
@@ -59,10 +76,12 @@ extension Coordinator {
     }
 }
 
-// MARK: Presentation
+// MARK: Internal Presentation
 extension Coordinator {
     @preconcurrency
     func push(page: Page) {
+		navigationTitle = page.navigationTitle
+		navigationTitleDisplayMode = page.navigationTitleDisplayMode
         path.append(page)
     }
     
@@ -72,7 +91,7 @@ extension Coordinator {
     }
 }
 
-// MARK: Dismissing
+// MARK: Internal Dismissing
 extension Coordinator {
     @preconcurrency
     func dismissFullScreenCover() {

@@ -2,9 +2,9 @@ import SwiftUI
 
 struct MainView: View {
     
-    // MARK: - Enviroments
+	// MARK: - DI States
+    @ObservedObject var manager: TravelRoutingManager
     @EnvironmentObject private var coordinator: Coordinator
-    @EnvironmentObject private var travelRoutingViewModel: TravelRoutingViewModel
     
     // MARK: - Body
     @ViewBuilder
@@ -14,10 +14,11 @@ struct MainView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                StoriesPreviewView()
-                RoutingView()
+                coordinator.build(page: .storiesPreview)
+
+                coordinator.build(page: .routing)
                 
-                if travelRoutingViewModel.travelPointsFilled {
+                if manager.travelPointsFilled {
                     findButtonView
                         .transition(.opacity)
                 }
@@ -29,8 +30,8 @@ struct MainView: View {
     // MARK: - Private Views
     private var findButtonView: some View {
         Button(action: {
-            coordinator.push(page: .carriersChoose)
-            travelRoutingViewModel.isDestination = nil
+			coordinator.push(page: .carriersChoose)
+            manager.isDestination = nil
         }) {
             Text("Найти")
                 .font(.bold17)
@@ -43,9 +44,4 @@ struct MainView: View {
                 .fill(.travelBlue)
         )
     }
-}
-
-#Preview {
-    CoordinatorView()
-        .environmentObject(Coordinator())
 }
