@@ -1,33 +1,33 @@
 import SwiftUI
 
-@Observable
 @MainActor
+@Observable
 final class StoriesViewModel {
     // --- manager (source of truth) ---
-	private(set) var manager: StoriesManagerProtocol
+	private let manager: StoriesManager
 
     // --- Index for story part ---
     private(set) var currentStoryPartIndex: Int = 0
 
     // --- timer ---
-    let timer: TimerManager
+    private(set) var timer: TimerManager
 	
 	@ObservationIgnored
 	var dismiss: DismissAction?
 
 	// --- internal init ---
     init(
-		manager: StoriesManagerProtocol,
+		manager: StoriesManager,
 		secondsPerStoryPart: TimeInterval = 5
 	) {
-        self.manager = manager
+		self.manager = manager
         self.currentStoryPartIndex = 0
         self.timer = TimerManager(secondsPerStoryPart: secondsPerStoryPart)
         self.timer.delegate = self
     }
 	
     // --- proxy accessors ---
-    var stories: [StoryModel] { manager.stories }
+	var stories: [StoryModel] { manager.stories }
     var currentStoryIndex: Int { manager.currentStoryIndex }
 }
 
