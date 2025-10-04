@@ -1,18 +1,16 @@
 import SwiftUI
 
 struct TravelTabView: View {
-    
-	// MARK: - Private States
+	// --- private states ---
     @State private var selectedTab: TravelTab = .main
 	
-	// MARK: - State Storage
+	// --- storage ---
     @AppStorage("darkThemeIsActive") private var darkThemeIsActive: Bool = false
     
-	// MARK: - DI States
-    @EnvironmentObject var coordinator: Coordinator
+	// --- DI ---
+    let coordinator: Coordinator
     
-	// MARK: - Body
-    @ViewBuilder
+	// --- body ---
     var body: some View {
         TabView(selection: $selectedTab) {
             coordinator.build(page: .main)
