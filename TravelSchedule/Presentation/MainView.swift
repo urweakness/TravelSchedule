@@ -2,11 +2,11 @@ import SwiftUI
 
 struct MainView: View {
     
-	// MARK: - DI States
+	// --- DI ---
 	@Bindable var manager: TravelRoutingManager
 	let coordinator: Coordinator
     
-    // MARK: - Body
+    // --- body ---
     @ViewBuilder
     var body: some View {
         ZStack {
@@ -27,7 +27,7 @@ struct MainView: View {
         }
     }
     
-    // MARK: - Private Views
+    // --- private subviews ---
     private var findButtonView: some View {
         Button(action: {
 			coordinator.push(page: .carriersChoose)
