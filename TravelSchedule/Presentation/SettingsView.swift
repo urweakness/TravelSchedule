@@ -6,7 +6,7 @@ struct SettingsView: View {
     @AppStorage("darkThemeIsActive") private var theme: Bool = false
 	
 	// MARK: - DI States
-	@EnvironmentObject private var coordinator: Coordinator
+	let push: (Page) -> Void
     
 	// MARK: - Body
     var body: some View {
@@ -33,7 +33,7 @@ struct SettingsView: View {
         TravelListCell(
             text: "Пользовательское соглашение",
             buttonAction: {
-				coordinator.push(page: .userAgreement)
+				push(.userAgreement)
 			}
 		) {
             Image(systemName: "chevron.right")
