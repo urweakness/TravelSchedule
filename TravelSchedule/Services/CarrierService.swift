@@ -1,17 +1,20 @@
-final class CarrierService: CarrierServiceProtocol {
+final actor CarrierService: CarrierServiceProtocol {
 	
-	// MARK: - Private Constants
+	// --- private constants ---
     private let client: Client
     private let apiKey: String
     
-	// MARK: - Internal Init
+	// --- internal init ---
     init(client: Client, apiKey: String) {
         self.client = client
         self.apiKey = apiKey
     }
     
-	// MARK: - Internal Methods
-    func getCarrierInfo(code: String, system: CodingSystem) async throws -> JsonPayload {
+	// --- internal methods ---
+    func getCarrierInfo(
+		code: String,
+		system: CodingSystem
+	) async throws -> CarrierJsonPayload {
         let response = try await client.getCarrierInfo(
             query: .init(
                 apikey: apiKey,
