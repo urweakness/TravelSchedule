@@ -1,7 +1,9 @@
 import Foundation
 
-final class AppManager: ObservableObject {
-    @Published var appState: AppState = .stage
-    @Published var loadingState: LoadingState = .idle
-    @Published var stationList: AllStationsResponse?
+@MainActor
+@Observable
+final class AppManager {
+    var appState: AppState = .stage
+    var loadingState: LoadingState = .idle
+    var stationList: AllStationsResponse?
 }
