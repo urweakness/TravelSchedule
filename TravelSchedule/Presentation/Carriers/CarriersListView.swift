@@ -24,20 +24,19 @@ let stubCarrier = CarrierModel(
 
 struct CarriersListView: View {
     
-    // MARK: - Private States
+    // --- private states ---
     @State private var carriers: [CarrierModel] = [stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier]
     
-    // MARK: - Observed Objects
-    @ObservedObject var manager: TravelRoutingManager
+	// --- DI ---
+	@Bindable var manager: TravelRoutingManager
+	let push: (Page) -> Void
+	let pop: () -> Void
     
-    // MARK: - Enviroments
-    @EnvironmentObject private var coordinator: Coordinator
-    
-    // MARK: - Private Constants
+    // --- private constants ---
     private let networkServicesManager = ServicesManager.shared
     private let overscrollBottomPadding = CarrierListOverscroll().bottomPadding
     
-    // MARK: - Body
+    // --- body ---
     var body: some View {
         ZStack {
             Color.travelWhite
@@ -52,7 +51,7 @@ struct CarriersListView: View {
                                 .onTapGesture {
                                     #warning("TODO: set carrier before pushing info about him")
                                     manager.choosedCarrier = ""
-                                    coordinator.push(page: .carrierInfo)
+									push(.carrierInfo)
                                 }
                         }
                     }
@@ -61,7 +60,7 @@ struct CarriersListView: View {
                 .scrollIndicators(.hidden)
             }
             .padding(.horizontal, 16)
-            .customNavigationBackButton()
+			.customNavigationBackButton(pop: pop)
             .navigationBarBackButtonHidden()
             
             VStack {
@@ -77,7 +76,7 @@ struct CarriersListView: View {
         }
     }
     
-    // MARK: - Private Views
+    // --- private views ---
     private var titleView: some View {
         Text(manager.title)
             .font(.bold24)
@@ -86,7 +85,7 @@ struct CarriersListView: View {
     
     private var nextButtonView: some View {
         Button(action: {
-            coordinator.push(page: .filtration)
+			push(.filtration)
         }) {
             Text("Уточнить время")
         }
@@ -95,7 +94,7 @@ struct CarriersListView: View {
         )
     }
     
-    // MARK: - Private Methods
+    // --- private methods ---
     private func loadCarriers() async {
         #warning("TODO: load carriers using (travelRoutingManager.filter)")
     }
