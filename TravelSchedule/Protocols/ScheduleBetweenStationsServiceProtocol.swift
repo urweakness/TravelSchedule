@@ -1,4 +1,4 @@
-protocol SegmentsServiceProtocol {
+protocol ScheduleBetweenStationsServiceProtocol {
     func search(
         from: String,
         to: String

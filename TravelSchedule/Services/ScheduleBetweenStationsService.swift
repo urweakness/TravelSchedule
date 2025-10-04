@@ -1,4 +1,4 @@
-final class SegmentsService: SegmentsServiceProtocol {
+final class ScheduleBetweenStationsService: SegmentsServiceProtocol {
 	
 	// MARK: - Private Constants
     private let client: Client
