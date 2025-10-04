@@ -3,8 +3,8 @@ import SwiftUI
 struct MainView: View {
     
 	// MARK: - DI States
-    @ObservedObject var manager: TravelRoutingManager
-    @EnvironmentObject private var coordinator: Coordinator
+	@Bindable var manager: TravelRoutingManager
+	let coordinator: Coordinator
     
     // MARK: - Body
     @ViewBuilder
@@ -18,7 +18,7 @@ struct MainView: View {
 
                 coordinator.build(page: .routing)
                 
-                if manager.travelPointsFilled {
+				if manager.travelPointsFilled {
                     findButtonView
                         .transition(.opacity)
                 }
