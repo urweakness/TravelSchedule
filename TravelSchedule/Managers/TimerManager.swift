@@ -1,17 +1,24 @@
 import SwiftUI
 import Combine
 
-@Observable
 @MainActor
+@Observable
 final class TimerManager {
+	@ObservationIgnored
     private let timerTickInterval: TimeInterval
+	@ObservationIgnored
     private let secondsPerStoryPart: TimeInterval
 
-    var progress: CGFloat = 0    // @Observable свойство
+    private(set) var progress: CGFloat = 0
+	@ObservationIgnored
     private var cancellable: Cancellable?
+	@ObservationIgnored
     weak var delegate: TimerViewModelDelegate?
 
-    init(secondsPerStoryPart: TimeInterval = 5, timerTickInterval: TimeInterval = 0.05) {
+    init(
+		secondsPerStoryPart: TimeInterval,
+		timerTickInterval: TimeInterval = 0.05
+	) {
         self.secondsPerStoryPart = secondsPerStoryPart
         self.timerTickInterval = timerTickInterval
     }
