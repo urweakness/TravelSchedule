@@ -2,7 +2,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class StoriesManager: StoriesManagerProtocol {
+final class StoriesManager {
     private(set) var stories = [StoryModel]()
     var currentStoryIndex: Int = 0
     
