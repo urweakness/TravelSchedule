@@ -2,17 +2,21 @@ import SwiftUI
 
 struct TravelPointChooseView<D: TravelPoint>: View {
 	
-    // MARK: - State Private Properties
+    // --- private states ---
     @StateObject private var viewModel = TravelPointChooseViewModel<D>()
     
-	// MARK: - DI States
-    @ObservedObject var manager: TravelRoutingManager
-    @EnvironmentObject private var coordinator: Coordinator
+	// --- DI ---
+	@Bindable var manager: TravelRoutingManager
+	let push: (Page) -> Void
+	let pop: () -> Void
+	let popToRoot: () -> Void
+	let navigationTitle: String
+	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
     
-    // MARK: - Private Constants
+    // --- private constants
     private let networkServicesManager = ServicesManager.shared
     
-    // MARK: - Body
+    // --- body ---
     @ViewBuilder
     var body: some View {
         VStack(spacing: 16) {
@@ -27,14 +31,14 @@ struct TravelPointChooseView<D: TravelPoint>: View {
             Spacer()
         }
         .padding(.horizontal, 16)
-		.navigationTitle(coordinator.navigationTitle)
-		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
+		.navigationTitle(navigationTitle)
+		.navigationBarTitleDisplayMode(navigationTitleDisplayMode)
         .background(.travelWhite)
-        .customNavigationBackButton()
+		.customNavigationBackButton(pop: pop)
         .animation(.bouncy, value: viewModel.filteredObjects)
     }
     
-    // MARK: - Private Properties
+    // --- private subviews ---
     private var emptyDestinationsView: some View {
         GeometryReader {
             Text(D.noContentTitleText)
@@ -57,14 +61,14 @@ struct TravelPointChooseView<D: TravelPoint>: View {
                             } else {
                                 manager.startTown = town
                             }
-                            coordinator.push(page: .stationChoose)
+                            push(.stationChoose)
                         } else if let station = destination as? Station {
                             if isDestination {
                                 manager.destinationStation = station
                             } else {
                                 manager.startStation = station
                             }
-                            coordinator.popToRoot()
+                            popToRoot()
                         }
                     }, rightView: {
                         Image(systemName: "chevron.right")
