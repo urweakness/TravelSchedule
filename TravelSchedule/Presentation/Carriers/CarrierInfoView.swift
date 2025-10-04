@@ -2,14 +2,16 @@ import SwiftUI
 
 struct CarrierInfoView: View {
     
-    // MARK: - State Private Properties
+    // --- private states ---
     @State private var carrierImage: Image?
     
-	// MARK: - DI States
-    @ObservedObject var manager: TravelRoutingManager
-	@EnvironmentObject private var coordinator: Coordinator
+	// --- DI ---
+	@Bindable var manager: TravelRoutingManager
+	let pop: () -> Void
+	let navigationTitle: String
+	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
     
-    // MARK: - Body
+    // --- body ---
     var body: some View {
         ZStack {
             Color.travelWhite
@@ -39,12 +41,12 @@ struct CarrierInfoView: View {
                 }
             }
         }
-		.navigationTitle(coordinator.navigationTitle)
-		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
-        .customNavigationBackButton()
+		.navigationTitle(navigationTitle)
+		.navigationBarTitleDisplayMode(navigationTitleDisplayMode)
+		.customNavigationBackButton(pop: pop)
     }
     
-    // MARK: - Private Views
+    // --- private views ---
     @ViewBuilder
     private var carrierImageVIew: some View {
         if let carrierImage {
@@ -109,12 +111,12 @@ struct CarrierInfoView: View {
         }
     }
     
-    // MARK: - Private Methods
+    // --- private methods ---
     private func fetchImage() async {
         let loader = DataLoader()
         guard
             let url = URL(string: "https://yastat.net/s3/rasp/media/data/company/logo/thy_kopya.jpg"),
-            let data = await loader.downloadData(url: url),
+            let data = try? await loader.downloadData(url: url),
             let uiImage = UIImage(data: data)
         else {
             return

@@ -112,7 +112,7 @@ struct CarrierListCellView: View {
 		let loader = DataLoader()
 		guard let imageURL = URL(string: carrier.logoURLString) else { return }
 		guard
-			let data = await loader.downloadData(url: imageURL),
+			let data = try? await loader.downloadData(url: imageURL),
 			let uiImage = UIImage(data: data)
 		else { return }
 		carrierLogoImage = Image(uiImage: uiImage)
