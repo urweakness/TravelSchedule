@@ -2,8 +2,8 @@ import SwiftUI
 
 struct RoutingView: View {
     
-    @ObservedObject var manager: TravelRoutingManager
-    @EnvironmentObject private var coordinator: Coordinator
+	@Bindable var manager: TravelRoutingManager
+	let push: (Page) -> Void
     
     var body: some View {
         ViewThatFits {
@@ -109,6 +109,6 @@ struct RoutingView: View {
     
     private func route(isDestination: Bool) {
         manager.isDestination = isDestination
-        coordinator.push(page: .townChoose)
+        push(.townChoose)
     }
 }
