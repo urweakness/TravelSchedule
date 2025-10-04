@@ -4,13 +4,13 @@ typealias CopyrightResponse = Components.Schemas.CopyrightResponse
 
 typealias CarrierResponse = Components.Schemas.CarrierResponse
 typealias CodingSystem = Components.Schemas.CodingSystem
-typealias JsonPayload = Operations.getCarrierInfo.Output.Ok.Body.jsonPayload
+typealias CarrierJsonPayload = Operations.getCarrierInfo.Output.Ok.Body.jsonPayload
 
 typealias NearestCityResponse = Components.Schemas.NearestCityResponse
 
 typealias NearestStations = Components.Schemas.Stations
 
-typealias Segments = Components.Schemas.Segments
+typealias ScheduleBetweenStationsResponse = Components.Schemas.Segments
 
 typealias ScheduleResponse = Components.Schemas.ScheduleResponse
 
