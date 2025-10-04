@@ -2,14 +2,16 @@ import SwiftUI
 
 struct UserAgreementView: View {
 	
-	// MARK: - Private States
+	// --- private states ---
 	@State private var isLoading = true
 	
-	// MARK: - DI States
-	@EnvironmentObject private var coordinator: Coordinator
+	// --- DI ---
+	let pop: () -> Void
+	let navigationTitle: String
+	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
 	@Environment(\.colorScheme) private var colorScheme: ColorScheme
 	
-	// MARK: - Body
+	// --- body ---
     var body: some View {
 		ZStack {
 			Color.travelWhite
@@ -36,12 +38,8 @@ struct UserAgreementView: View {
 			}
 		}
 		.animation(.spring(.bouncy), value: isLoading)
-		.navigationTitle(coordinator.navigationTitle)
-		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
-		.customNavigationBackButton()
+		.navigationTitle(navigationTitle)
+		.navigationBarTitleDisplayMode(navigationTitleDisplayMode)
+		.customNavigationBackButton(pop: pop)
     }
-}
-
-#Preview {
-    UserAgreementView()
 }
