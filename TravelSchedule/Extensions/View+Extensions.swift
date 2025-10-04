@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - View Extensions
 extension View {
-    func customNavigationBackButton() -> some View {
-        modifier(CustomNavigationBackButton())
+	func customNavigationBackButton(pop: @escaping () -> Void) -> some View {
+		modifier(CustomNavigationBackButton(pop: pop))
     }
 	
 	func onScrollPageChange(
@@ -27,7 +27,7 @@ extension View {
 // MARK: - Private Helper for LazyHScrollView
 // --- preference ---
 private struct ScrollOffsetPreferenceKey: PreferenceKey {
-	static var defaultValue: CGFloat = 0
+	static let defaultValue: CGFloat = 0
 	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
 		value = nextValue()
 	}
