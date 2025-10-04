@@ -1,18 +1,18 @@
 import Foundation
 
-final class StationsListService: StationsListServiceProtocol {
+final actor StationsListService: StationsListServiceProtocol {
 	
-	// MARK: - Private Constants
-    private let client: Client
-    private let apiKey: String
-    
-	// MARK: - Internal Init
-    init(client: Client, apiKey: String) {
-        self.client = client
-        self.apiKey = apiKey
-    }
-    
-	// MARK: - Internal Methods
+	// --- private constants ---
+	private let client: Client
+	private let apiKey: String
+	
+	// --- internal init ---
+	init(client: Client, apiKey: String) {
+		self.client = client
+		self.apiKey = apiKey
+	}
+	
+	// --- internal methods ---
     func getAllStations() async throws -> AllStationsResponse {
         let response = try await client.getAllStations(
             query: .init(
@@ -36,7 +36,7 @@ final class StationsListService: StationsListServiceProtocol {
                 }
                 
                 return try JSONDecoder().decode(AllStationsResponse.self, from: data)
-                
+
             }
             
         default:
