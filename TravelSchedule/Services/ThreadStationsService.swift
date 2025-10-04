@@ -1,16 +1,16 @@
-final class ThreadStationsService: ThreadStationsServiceProtocol {
+final actor ThreadStationsService: ThreadStationsServiceProtocol {
 	
-	// MARK: - Private Constants
-    private let client: Client
-    private let apiKey: String
-    
-	// MARK: - Internal Init
-    init(client: Client, apiKey: String) {
-        self.client = client
-        self.apiKey = apiKey
-    }
-    
-	// MARK: - Internal Methods
+	// --- private constants ---
+	private let client: Client
+	private let apiKey: String
+	
+	// --- internal init ---
+	init(client: Client, apiKey: String) {
+		self.client = client
+		self.apiKey = apiKey
+	}
+	
+	// --- internal methods ---
     func getThreadStations(uid: String) async throws -> ThreadStationsResponse {
         let response = try await client.getRouteStations(
             query: .init(
