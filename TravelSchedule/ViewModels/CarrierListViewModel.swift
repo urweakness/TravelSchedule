@@ -74,15 +74,6 @@ final class CarrierListViewModel {
 	
 	// --- async task fetch ---
 	func fetchScheduleBetweenStations() async -> ScheduleBetweenStationsResponse? {
-		print(
-			manager.startStation?.yandexCode,
-			manager.startStation?.esrCode
-		)
-		print(
-			manager.destinationStation?.yandexCode,
-			manager.destinationStation?.esrCode
-		)
-		
 		guard
 			let fromCode = manager.startStation?.yandexCode,
 			let toCode = manager.destinationStation?.yandexCode
