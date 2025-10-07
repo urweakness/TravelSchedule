@@ -15,12 +15,9 @@ final class Coordinator: ObservableObject {
         self.dependencies = dependencies
     }
 	
-	func navigationPath(_ block: @Sendable (NavigationPath) -> Void) {
-		block(path)
-	}
-	
-	func setNavPath(_ path: NavigationPath) {
-		self.path = path
+	private func setNavigation(for page: Page) {
+		navigationTitle = page.navigationTitle
+		navigationTitleDisplayMode = page.navigationTitleDisplayMode
 	}
 }
 
@@ -57,7 +54,9 @@ extension Coordinator {
         
         case .townChoose:
             TravelPointChooseView<Town>(
-				manager: dependencies.travelManager,
+				routingManager: dependencies.travelManager,
+				appManager: dependencies.appManager,
+				loadingState: dependencies.dataCoordinator.loader.loadingState,
 				push: push,
 				pop: pop,
 				popToRoot: popToRoot,
@@ -67,7 +66,9 @@ extension Coordinator {
             
         case .stationChoose:
             TravelPointChooseView<Station>(
-				manager: dependencies.travelManager,
+				routingManager: dependencies.travelManager,
+				appManager: dependencies.appManager,
+				loadingState: dependencies.dataCoordinator.loader.loadingState,
 				push: push,
 				pop: pop,
 				popToRoot: popToRoot,
@@ -85,6 +86,7 @@ extension Coordinator {
         case .carriersChoose:
             CarriersListView(
 				manager: dependencies.travelManager,
+				dataCoordinator: dependencies.dataCoordinator,
 				push: push,
 				pop: pop
 			)
@@ -97,7 +99,7 @@ extension Coordinator {
             
         case .carrierInfo:
 			CarrierInfoView(
-				manager: dependencies.travelManager,
+				carrier: dependencies.travelManager.choosedCarrier,
 				pop: pop,
 				navigationTitle: navigationTitle,
 				navigationTitleDisplayMode: navigationTitleDisplayMode
@@ -127,8 +129,7 @@ extension Coordinator {
 extension Coordinator {
     @preconcurrency
     func push(page: Page) {
-		navigationTitle = page.navigationTitle
-		navigationTitleDisplayMode = page.navigationTitleDisplayMode
+		setNavigation(for: page)
         path.append(page)
     }
     
@@ -146,7 +147,8 @@ extension Coordinator {
     }
     
     @preconcurrency
-    func pop() {
+	func pop() {
+		#warning("TODO: cant change navigation title on pop beacuse we cant get NavigationPath elements directly")
         path.removeLast()
     }
     
