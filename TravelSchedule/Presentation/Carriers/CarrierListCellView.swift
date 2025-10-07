@@ -1,43 +1,74 @@
 import SwiftUI
 
+#if DEBUG
+#Preview {
+	CarrierListCellView(
+		carrier: CarrierModel(
+			code: 2345,
+			logoURLString: "",
+//			name: "УПАПDFJSDKFSDKJFHSKDJFHSKJDHFSDJKHFSKJDFSOIDJFOPSIDJFOOSDIJFPOSDIJF",
+			name: "УПАП-1 - филиал ГУП Башавтотранс РБ",
+			transferInfo: "С пересадкой в Костроме",
+			departureDate: .now,
+			startTime: "10:00",
+			endTime: "20:00",
+			duration: "20 часов\n15 минут",
+			email: nil,
+			phone: nil
+		)
+	)
+	.padding(.horizontal, 16)
+}
+#endif
+
 struct CarrierListCellView: View {
-    
-    // MARK: - State Private Properties
-    @State var carrier: CarrierModel
+	
+	// -- private states
     @State private var carrierLogoImage: Image?
+	
+	// --- DI ---
+	let carrier: CarrierModel
+	
+	// --- envs ---
     @Environment(\.colorScheme) var theme
     
+	// --- body ---
     var body: some View {
-        RoundedRectangle(cornerRadius: 24)
-            .fill(theme == .light ? .travelLightGray : .white)
-            .overlay(alignment: .topLeading) {
-                HStack(spacing: 8) {
-                    carrierImageView
-                    VStack(alignment: .leading, spacing: 2) {
-                        carrierNameView
-                        transferInfoView
-                    }
-                }
-                .padding(.top, 14)
-                .padding(.leading, 14)
-            }
-            .overlay(alignment: .topTrailing) {
-                dateView
-                    .padding(.top, 14)
-                    .padding(.trailing, 14)
-            }
-            .overlay(alignment: .bottom) {
+		HStack(spacing: 8) {
+			carrierImageView
+			VStack(
+				alignment: .leading,
+				spacing: 18
+			) {
+				VStack(alignment: .leading, spacing: 2) {
+					HStack(alignment: .top) {
+						carrierNameView
+						dateView
+							.opacity(0)
+							.padding(.trailing, 12)
+					}
+					transferInfoView
+				}
 				tripContent
-            }
-            .frame(height: 104)
-            .task {
-                Task {
-					await loadCarrierImage()
-                }
-            }
+			}
+		}
+		.padding(.top, 14)
+		.padding(.leading, 14)
+		.background {
+			RoundedRectangle(cornerRadius: 16)
+				.fill(theme == .light ? .travelLightGray : .white)
+		}
+		.overlay(alignment: .topTrailing) {
+			dateView
+				.padding(.top, 14)
+				.padding(.trailing, 14)
+		}
+		.task {
+			await loadCarrierImage()
+		}
     }
     
-    // MARK: - Private Views
+    // --- private subviews
 	private var tripContent: some View {
 		HStack(spacing: 8) {
 			startTimeView
@@ -46,7 +77,7 @@ struct CarrierListCellView: View {
 			timeDividerView
 			endTimeView
 		}
-		.padding(.horizontal, 14)
+		.padding(.trailing, 14)
 		.padding(.bottom, 14)
 	}
 	
@@ -68,19 +99,20 @@ struct CarrierListCellView: View {
             .foregroundColor(.black)
     }
     
+	@ViewBuilder
     private var transferInfoView: some View {
-        Text(carrier.transferInfo)
-            .font(.regular12)
-            .foregroundColor(.travelRed)
+		if let transferInfo = carrier.transferInfo {
+			Text(transferInfo)
+				.font(.regular12)
+				.foregroundColor(.travelRed)
+		}
     }
     
     @ViewBuilder
     private var dateView: some View {
-        if let dateString = convertInputDateString(carrier.dateString) {
-            Text(dateString)
-            .font(.regular12)
-            .foregroundColor(.black)
-        }
+		Text(carrier.departureDateString)
+			.font(.regular12)
+			.foregroundColor(.black)
     }
     
     private var startTimeView: some View {
@@ -96,8 +128,9 @@ struct CarrierListCellView: View {
     }
     
     private var deltaTimeView: some View {
-        Text(carrier.tripTimeDelta)
+		Text(carrier.duration)
             .font(.regular12)
+			.multilineTextAlignment(.center)
             .foregroundColor(.black)
     }
     
@@ -107,38 +140,16 @@ struct CarrierListCellView: View {
             .frame(height: 1)
     }
     
-    // MARK: - Private Methods
+    // --- private methods ---
 	private func loadCarrierImage() async {
+		guard let logoURLString = carrier.logoURLString else { return }
+		
 		let loader = DataLoader()
-		guard let imageURL = URL(string: carrier.logoURLString) else { return }
+		guard let imageURL = URL(string: logoURLString) else { return }
 		guard
 			let data = try? await loader.downloadData(url: imageURL),
 			let uiImage = UIImage(data: data)
 		else { return }
 		carrierLogoImage = Image(uiImage: uiImage)
 	}
-	
-    private func convertInputDateString(_ dateString: String?) -> String? {
-        guard let dateString else {
-            return nil
-        }
-        
-        let inputDateFormatter = DateFormatter()
-        inputDateFormatter.dateStyle = .long
-        inputDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        inputDateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        
-        guard let date = inputDateFormatter.date(from: dateString) else {
-            return nil
-        }
-        
-        let outputDateFormatter = DateFormatter()
-        outputDateFormatter.dateFormat = "d MMMM"
-        
-        return outputDateFormatter.string(from: date)
-    }
-}
-
-#Preview {
-    CarrierListCellView(carrier: stubCarrier)
 }
