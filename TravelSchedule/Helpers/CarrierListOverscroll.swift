@@ -2,7 +2,7 @@ import CoreGraphics
 
 struct CarrierListOverscroll {
     var bottomPadding: CGFloat {
-        bottomButtonPadding * 2 + safeAreaInset + verticalStackSpacing + buttonTextFont
+        bottomButtonPadding + safeAreaInset + verticalStackSpacing + buttonTextFont
     }
     
     private let bottomButtonPadding: CGFloat = 20
