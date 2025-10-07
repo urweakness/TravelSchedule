@@ -25,6 +25,9 @@ struct MainView: View {
                 Spacer()
             }
         }
+		.onAppear {
+			manager.clearFilter()
+		}
     }
     
     // --- private subviews ---
