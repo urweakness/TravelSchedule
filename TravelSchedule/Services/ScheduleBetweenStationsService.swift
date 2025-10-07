@@ -18,7 +18,8 @@ final actor ScheduleBetweenStationsService: ScheduleBetweenStationsServiceProtoc
         let response = try await client.getScheduleBetweenStations(query: .init(
             apikey: apiKey,
             from: from,
-            to: to
+            to: to,
+			transfers: true
         ))
         
 		return try response.ok.body.json
