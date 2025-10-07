@@ -1,3 +1,4 @@
+import Foundation
 enum Filter {
     case departTime(DepartTimeFilter)
     case withTransfer(Bool)
@@ -39,6 +40,19 @@ enum Filter {
                 "Ночь 00:00 - 06:00"
             }
         }
+		
+		var time: (leftBound: String, rightBound: String) {
+			switch self {
+			case .morning:
+				return (leftBound: "06:00", rightBound: "12:00")
+			case .day:
+				return (leftBound: "12:00", rightBound: "18:00")
+			case .evening:
+				return (leftBound: "18:00", rightBound: "00:00")
+			case .night:
+				return (leftBound: "00:00", rightBound: "06:00")
+			}
+		}
         
         var id: Self { self }
     }
