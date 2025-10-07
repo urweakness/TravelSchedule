@@ -59,6 +59,10 @@ struct FiltrationView: View {
             }
             .padding(.bottom, 24)
         }
+		.onAppear {
+			selectedDepartFilters = manager.filter?.departFilter ?? []
+			selectedTransferFilter = manager.filter?.allowTransfers
+		}
     }
     
     // --- private views ---
@@ -121,7 +125,7 @@ struct FiltrationView: View {
     private func confirmAction() {
         manager.filter = .init(
             departFilter: selectedDepartFilters,
-            transferFilter: selectedTransferFilter
+            allowTransfers: selectedTransferFilter
         )
 		pop()
     }
