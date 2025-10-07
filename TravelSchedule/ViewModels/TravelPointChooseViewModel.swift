@@ -84,22 +84,23 @@ final class TravelPointChooseViewModel<D: TravelPoint>: ObservableObject {
 		
 		var result = [Town]()
 		
-		for country in countries {
-			for region in country.regions ?? [] {
-				guard let settlements = region.settlements else { continue }
-				
-				for settlement in settlements {
-					guard
-						let title = settlement.title,
-						let code = settlement.codes?.yandex_code
-					else { continue }
-					result.append(
-						Town(
-							name: title,
-							code: code
-						)
+		let country = countries.first(where: { $0.title == "Россия" })
+		guard let regions = country?.regions else { return [] }
+		
+		for region in regions {
+			guard let settlements = region.settlements else { continue }
+			
+			for settlement in settlements {
+				guard
+					let title = settlement.title,
+					let code = settlement.codes?.yandex_code
+				else { continue }
+				result.append(
+					Town(
+						name: title,
+						code: code
 					)
-				}
+				)
 			}
 		}
 		
