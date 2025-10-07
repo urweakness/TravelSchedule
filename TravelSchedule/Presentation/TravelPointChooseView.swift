@@ -3,18 +3,39 @@ import SwiftUI
 struct TravelPointChooseView<D: TravelPoint>: View {
 	
     // --- private states ---
-    @StateObject private var viewModel = TravelPointChooseViewModel<D>()
+	@StateObject private var viewModel: TravelPointChooseViewModel<D>
     
 	// --- DI ---
-	@Bindable var manager: TravelRoutingManager
-	let push: (Page) -> Void
+	let loadingState: LoadingState
 	let pop: () -> Void
-	let popToRoot: () -> Void
 	let navigationTitle: String
 	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
-    
-    // --- private constants
-    private let networkServicesManager = ServicesManager.shared
+	
+	init(
+		routingManager: TravelRoutingManager,
+		appManager: AppManager,
+		loadingState: LoadingState,
+		push: @escaping (Page) -> Void,
+		pop: @escaping () -> Void,
+		popToRoot: @escaping () -> Void,
+		navigationTitle: String,
+		navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
+	) {
+		self.loadingState = loadingState
+		self.pop = pop
+		self.navigationTitle = navigationTitle
+		self.navigationTitleDisplayMode = navigationTitleDisplayMode
+		
+		_viewModel = StateObject(
+			wrappedValue:
+				TravelPointChooseViewModel(
+					appManager: appManager,
+					routingManager: routingManager,
+					push: push,
+					popToRoot: popToRoot
+				)
+		)
+	}
     
     // --- body ---
     @ViewBuilder
@@ -22,11 +43,21 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         VStack(spacing: 16) {
             searchFieldView
             
-            if viewModel.filteredObjects.isEmpty {
-                emptyDestinationsView
-            } else {
-                destinationsView
-            }
+			if loadingState == .idle {
+				if viewModel.filteredObjects.isEmpty {
+					emptyDestinationsView
+						.transition(.opacity)
+				} else {
+					destinationsView
+				}
+			} else {
+				Spacer()
+				ProgressView()
+					.scaleEffect(2)
+					.progressViewStyle(.circular)
+					.transition(.blurReplace)
+					.transition(.scale)
+			}
             
             Spacer()
         }
@@ -36,6 +67,12 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         .background(.travelWhite)
 		.customNavigationBackButton(pop: pop)
         .animation(.bouncy, value: viewModel.filteredObjects)
+		.ignoresSafeArea(edges: .bottom)
+		.onChange(of: loadingState) { _, newValue in
+			guard newValue == .idle else { return }
+			viewModel.parseTravelPoints()
+		}
+		.animation(.default, value: loadingState)
     }
     
     // --- private subviews ---
@@ -49,38 +86,30 @@ struct TravelPointChooseView<D: TravelPoint>: View {
     }
 
     private var destinationsView: some View {
-        VStack {
-            ForEach(viewModel.filteredObjects) { destination in
-                TravelListCell(
-                    text: destination.name,
-                    buttonAction: {
-                        guard let isDestination = manager.isDestination else { return }
-                        if let town = destination as? Town {
-                            if isDestination  {
-                                manager.destinationTown = town
-                            } else {
-                                manager.startTown = town
-                            }
-                            push(.stationChoose)
-                        } else if let station = destination as? Station {
-                            if isDestination {
-                                manager.destinationStation = station
-                            } else {
-                                manager.startStation = station
-                            }
-                            popToRoot()
-                        }
-                    }, rightView: {
-                        Image(systemName: "chevron.right")
-                            .font(.bold17)
-                    })
-            }
-        }
-        .transition(.blurReplace)
+		List(viewModel.filteredObjects, id: \.id) { destination in
+			TravelListCell(
+				text: destination.name,
+				buttonAction: {
+					viewModel.didTapOnObject(destination: destination)
+				}, rightView: {
+					Image(systemName: "chevron.right")
+						.font(.bold17)
+				}
+			)
+			.listRowBackground(Color.clear)
+			.listRowSeparator(.hidden)
+			.listSectionSeparator(.hidden)
+		}
+		.scrollIndicators(.hidden)
+		.listStyle(.plain)
+		.scrollContentBackground(.hidden)
+		.scrollDismissesKeyboard(.interactively)
+		.padding(.horizontal, -16)
     }
     
     private var searchFieldView: some View {
         TextField("Введите запрос", text: $viewModel.searchText)
             .textFieldStyle(SearchTextFieldStyle(text: $viewModel.searchText))
+			.allowsHitTesting(loadingState == .idle)
     }
 }
