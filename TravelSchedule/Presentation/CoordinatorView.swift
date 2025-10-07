@@ -4,6 +4,7 @@ struct CoordinatorView: View {
 	
 	// MARK: - Private States
     @StateObject private var coordinator: Coordinator
+	@State private var viewModel: CoordinatorViewViewModel
     
     var body: some View {
 		#warning(
@@ -27,6 +28,13 @@ struct CoordinatorView: View {
                 }
         }
 		.navigationBarBackButtonHidden()
+		.task(priority: .high) {
+			guard
+				coordinator.dependencies.appManager.stationList == nil
+			else { return }
+			coordinator.dependencies.appManager.stationList = await viewModel
+				.fetchAllStations()
+		}
     }
 }
 
@@ -37,6 +45,7 @@ extension CoordinatorView {
         let appManager = AppManager()
         let storiesManager: StoriesManager
         let travelManager = TravelRoutingManager()
+		let dataCoordinator = DataCoordinator()
         
         switch appManager.appState {
         case .stage:
@@ -48,12 +57,19 @@ extension CoordinatorView {
         let dependencies = AppDependencies(
             appManager: appManager,
             storiesManager: storiesManager,
-            travelManager: travelManager
+            travelManager: travelManager,
+			dataCoordinator: dataCoordinator
         )
 	
         _coordinator = StateObject(
             wrappedValue: Coordinator(dependencies: dependencies)
         )
+		
+		_viewModel = State(
+			initialValue: CoordinatorViewViewModel(
+				dataCoordinator: dependencies.dataCoordinator
+			)
+		)
     }
 }
 
