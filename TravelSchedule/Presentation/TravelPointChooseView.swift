@@ -111,5 +111,6 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         TextField("Введите запрос", text: $viewModel.searchText)
             .textFieldStyle(SearchTextFieldStyle(text: $viewModel.searchText))
 			.allowsHitTesting(loadingState == .idle)
+		#warning("TODO: implement 0.3 debounce for text")
     }
 }
