@@ -11,7 +11,7 @@ final class TravelRoutingManager {
     
     var isDestination: Bool?
     
-    var choosedCarrier: String?
+	var choosedCarrier: CarrierModel = .mock
     
     var filter: FilterModel?
     
@@ -29,6 +29,10 @@ final class TravelRoutingManager {
     
     @inlinable
     var title: String {
-        "\(startTown?.name ?? "")(\(startStation?.name ?? "")) → \(destinationTown?.name ?? "")(\(destinationStation?.name ?? ""))"
+        "\(startTown?.name ?? "") (\(startStation?.name ?? "")) → \(destinationTown?.name ?? "") (\(destinationStation?.name ?? ""))"
     }
+	
+	func clearFilter() {
+		filter = nil
+	}
 }
