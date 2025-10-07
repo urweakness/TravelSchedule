@@ -1,7 +1,7 @@
 import OpenAPIURLSession
 import SwiftUI
 
-final actor ServicesManager {
+final actor DataFetcher {
     enum ServiceError: Error {
         case stationListError(String)
         case threadStationsError(String)
@@ -12,27 +12,31 @@ final actor ServicesManager {
         case nearestCityError(String)
         case carrierInfoError(String)
     }
-    
-    static let shared = ServicesManager()
-    private init() {}
+	
+	private func client() throws -> Client {
+		.init(
+			serverURL: try Servers.Server1.url(),
+			transport: URLSessionTransport()
+		)
+	}
 }
 
-extension ServicesManager {
+// MARK: - DataFetcher Extensions
+
+// --- internal methods ---
+extension DataFetcher {
 		
 	// --- getStationsList ---
     func getStationsList(format: Format = .json) async throws -> AllStationsResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let stationsListService = StationsListService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
             
-            async let stationList = stationsListService.getAllStations()
-            return try await stationList
+			async let stationList = stationsListService.getAllStations()
 			
+            return try await stationList
         } catch {
             throw ServiceError.stationListError(error.localizedDescription)
         }
@@ -41,10 +45,8 @@ extension ServicesManager {
 	// --- getThreadStations ---
 	func getThreadStations(by uid: String) async throws -> ThreadStationsResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            
             let threadStationsService = ThreadStationsService(
-                client: client,
+                client: try client(),
                 apiKey: GlobalConstants.apiKey
             )
             
@@ -52,7 +54,6 @@ extension ServicesManager {
                 uid: uid
             )
 			return try await threadStations
-			
         } catch {
 			throw ServiceError.threadStationsError(error.localizedDescription)
         }
@@ -61,10 +62,8 @@ extension ServicesManager {
 	// --- getStationSchedule ---
 	func getStationSchedule(station: String) async throws -> ScheduleResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            
             let stationScheduleService = StationScheduleService(
-                client: client,
+                client: try client(),
                 apiKey: GlobalConstants.apiKey
             )
             
@@ -72,7 +71,6 @@ extension ServicesManager {
 				station: station
             )
 			return try await stationSchedule
-			
         } catch {
             throw ServiceError.stationScheduleError(error.localizedDescription)
         }
@@ -85,12 +83,9 @@ extension ServicesManager {
 		distance: Int
 	) async throws -> NearestStations {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let nearestStationsService = NearestStationsService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
             
             async let stations = nearestStationsService.getNearestStations(
@@ -99,7 +94,6 @@ extension ServicesManager {
 				distance: distance
             )
 			return try await stations
-			
         } catch {
             throw ServiceError.nearestStationsError(error.localizedDescription)
         }
@@ -111,20 +105,16 @@ extension ServicesManager {
 		to: String
 	) async throws -> ScheduleBetweenStationsResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let segmentsService = ScheduleBetweenStationsService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
              
-            async let search = segmentsService.search(
+			async let search = segmentsService.search(
                 from: from,
 				to: to
             )
 			return try await search
-			
         } catch {
             throw ServiceError.segmentsError(error.localizedDescription)
         }
@@ -133,16 +123,12 @@ extension ServicesManager {
 	// --- getCopyright ---
 	func getCopyright() async throws -> CopyrightResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let copyrightService = CopyrightService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
             async let copyright = copyrightService.getCopyright()
 			return try await copyright
-			
         } catch {
             throw ServiceError.copyrightError(error.localizedDescription)
         }
@@ -154,12 +140,9 @@ extension ServicesManager {
 		lng: Double
 	) async throws -> NearestCityResponse {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let nearestSettlementService = NearestSettlementService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
             
             async let nearestCity = nearestSettlementService.getNearestCity(
@@ -167,7 +150,6 @@ extension ServicesManager {
                 lng: lng
             )
 			return try await nearestCity
-            
         } catch {
             throw ServiceError.nearestCityError(error.localizedDescription)
         }
@@ -179,12 +161,9 @@ extension ServicesManager {
 		codingSystem: CodingSystem
 	) async throws -> CarrierJsonPayload {
         do {
-            let client = Client(serverURL: try Servers.Server1.url(), transport: URLSessionTransport())
-            let apiKey = GlobalConstants.apiKey
-            
             let carrierService = CarrierService(
-                client: client,
-                apiKey: apiKey
+                client: try client(),
+				apiKey: GlobalConstants.apiKey
             )
 
             async let carrierInfo = carrierService.getCarrierInfo(
@@ -192,7 +171,6 @@ extension ServicesManager {
 				system: codingSystem
             )
 			return try await carrierInfo
-
         } catch {
             throw ServiceError.carrierInfoError(error.localizedDescription)
         }
