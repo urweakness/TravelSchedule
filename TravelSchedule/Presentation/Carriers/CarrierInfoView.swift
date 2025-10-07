@@ -6,7 +6,7 @@ struct CarrierInfoView: View {
     @State private var carrierImage: Image?
     
 	// --- DI ---
-	@Bindable var manager: TravelRoutingManager
+	let carrier: CarrierModel
 	let pop: () -> Void
 	let navigationTitle: String
 	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
@@ -49,65 +49,80 @@ struct CarrierInfoView: View {
     // --- private views ---
     @ViewBuilder
     private var carrierImageVIew: some View {
-        if let carrierImage {
-            carrierImage
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 104)
-                .frame(maxWidth: .infinity)
-                .clipShape(
-                    RoundedRectangle(cornerRadius: 24)
-                )
-        } else {
-            Rectangle()
-                .fill(.clear)
-                .frame(height: 104)
-        }
+		if
+			let logoURLString = carrier.logoURLString,
+			!logoURLString.isEmpty
+		{
+			if let carrierImage {
+				carrierImage
+					.resizable()
+					.aspectRatio(contentMode: .fill)
+					.frame(height: 104)
+					.frame(maxWidth: .infinity)
+					.clipShape(
+						RoundedRectangle(cornerRadius: 24)
+					)
+			} else {
+				Rectangle()
+					.fill(.clear)
+					.frame(height: 104)
+			}
+		}
     }
     
     private var carrierNameView: some View {
-        Text("ОАО «РЖД»")
+		Text(carrier.name)
             .font(.bold24)
             .foregroundColor(.travelBlack)
     }
     
     @ViewBuilder
     private var carrierEmailView: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 0
-        ) {
-            Text("E-mail")
-                .font(.regular17)
-                .foregroundStyle(.travelBlack)
-            
-            if let url = URL(string: "mailto:i.lozgkina@yandex.ru") {
-                Link(
-                    "i.lozgkina@yandex.ru",
-                    destination: url
-                )
-                .font(.regular12)
-            }
+		if
+			let email = carrier.email,
+			!email.isEmpty
+		{
+			VStack(
+				alignment: .leading,
+				spacing: 0
+			) {
+				Text("E-mail")
+					.font(.regular17)
+					.foregroundStyle(.travelBlack)
+				
+				if let url = URL(string: "mailto:\(email)") {
+					Link(
+						email,
+						destination: url
+					)
+					.font(.regular12)
+				}
+			}
         }
     }
     
     @ViewBuilder
     private var carrierPhoneView: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 0
-        ) {
-            Text("Телефон")
-                .font(.regular17)
-                .foregroundStyle(.travelBlack)
-            
-            if let url = URL(string: "tel:+7 (904) 329-27-71") {
-                Link(
-                    "+7 (904) 329-27-71",
-                    destination: url
-                )
-                .font(.regular12)
-            }
+        if
+			let phone = carrier.phone,
+			!phone.isEmpty
+		{
+ 		   VStack(
+				alignment: .leading,
+				spacing: 0
+			) {
+				Text("Телефон")
+					.font(.regular17)
+					.foregroundStyle(.travelBlack)
+				
+				if let url = URL(string: "tel:\(phone)") {
+					Link(
+						phone,
+						destination: url
+					)
+					.font(.regular12)
+				}
+			}
         }
     }
     
@@ -115,7 +130,8 @@ struct CarrierInfoView: View {
     private func fetchImage() async {
         let loader = DataLoader()
         guard
-            let url = URL(string: "https://yastat.net/s3/rasp/media/data/company/logo/thy_kopya.jpg"),
+			let logoURLString = carrier.logoURLString,
+			let url = URL(string: logoURLString),
             let data = try? await loader.downloadData(url: url),
             let uiImage = UIImage(data: data)
         else {
