@@ -35,6 +35,8 @@ struct TravelPointChooseView<D: TravelPoint>: View {
 					popToRoot: popToRoot
 				)
 		)
+		
+		
 	}
     
     // --- body ---
@@ -105,12 +107,17 @@ struct TravelPointChooseView<D: TravelPoint>: View {
 		.scrollContentBackground(.hidden)
 		.scrollDismissesKeyboard(.interactively)
 		.padding(.horizontal, -16)
+		.accessibilityIdentifier(
+			AccessibilityIdentifier.travelPointList.rawValue
+		)
     }
     
     private var searchFieldView: some View {
-        TextField("Введите запрос", text: $viewModel.searchText)
-            .textFieldStyle(SearchTextFieldStyle(text: $viewModel.searchText))
-			.allowsHitTesting(loadingState == .idle)
-		#warning("TODO: implement 0.3 debounce for text")
+		TextField(
+			String(localized: .enterTextToSearch),
+			text: $viewModel.searchText
+		)
+		.textFieldStyle(SearchTextFieldStyle(text: $viewModel.searchText))
+		.allowsHitTesting(loadingState == .idle)
     }
 }
