@@ -4,7 +4,6 @@ import SwiftUI
 @Observable
 final class Coordinator: ObservableObject {
     var path = NavigationPath()
-    var selectedTab: Int = 0
 	var fullScreenCover: FullScreenCover?
 	private(set) var navigationTitle = ""
     private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
@@ -25,32 +24,59 @@ final class Coordinator: ObservableObject {
 
 // MARK: Internal Builders
 extension Coordinator {
+	
+	// --- private builder helpers ---
+	private func buildStoriesPreviewView() -> StoriesPreviewView {
+		StoriesPreviewView(
+			manager: dependencies.storiesManager,
+			present: present
+		)
+	}
+	
+	private func buildRoutingView() -> RoutingView {
+		RoutingView(
+			manager: dependencies.travelManager,
+			push: push
+		)
+	}
+	
+	private func buildMainView() -> MainView {
+		MainView(
+			manager: dependencies.travelManager,
+			storiesPreviewContent: buildStoriesPreviewView,
+			routingContent: buildRoutingView,
+			push: push
+		)
+	}
+	
+	private func buildSettingsView() -> SettingsView {
+		SettingsView(push: push)
+	}
+	
+	// --- internal builder for CoordinatorView ---
     @ViewBuilder @preconcurrency
     func build(page: Page) -> some View {
         switch page {
+			
         case .tabView:
-            TravelTabView(coordinator: self)
+			TravelTabView(
+				manager: dependencies.appManager,
+				dataCoordinator: dependencies.dataCoordinator,
+				buildMainView: buildMainView,
+				buildSettingsView: buildSettingsView
+			)
             
         case .main:
-            MainView(
-				manager: dependencies.travelManager,
-				coordinator: self
-			)
+			buildMainView()
             
         case .routing:
-            RoutingView(
-				manager: dependencies.travelManager,
-				push: push
-			)
+			buildRoutingView()
         
         case .settings:
-			SettingsView(push: push)
+			buildSettingsView()
             
         case .storiesPreview:
-			StoriesPreviewView(
-				manager: dependencies.storiesManager,
-				present: present
-			)
+			buildStoriesPreviewView()
         
         case .townChoose:
             TravelPointChooseView<Town>(
@@ -115,9 +141,12 @@ extension Coordinator {
         switch fullScreenCover {
         case .story:
 			FullScreenStoriesView(manager: dependencies.storiesManager)
-            
-        case .error(let errorKind):
-            ErrorView(kind: errorKind)
+			
+		case .error(let kind):
+			ErrorView(
+				kind: kind,
+				onDismiss: dismissFullScreenCover
+			)
             
         default:
             EmptyView()
