@@ -5,6 +5,6 @@ struct Station: TravelPoint {
 	let yandexCode: String?
     
     static var noContentTitleText: String {
-        "Станция не найдена"
+		.init(localized: .noStationFound)
     }
 }
