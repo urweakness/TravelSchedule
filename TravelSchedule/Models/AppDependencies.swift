@@ -3,4 +3,5 @@ struct AppDependencies {
     let storiesManager: StoriesManager
     let travelManager: TravelRoutingManager
 	let dataCoordinator: DataCoordinator
+	let connectionMonitor: ConnectionMonitor
 }
