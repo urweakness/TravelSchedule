@@ -1,10 +1,8 @@
-import Observation
-
 @MainActor
 @Observable
-final class CoordinatorViewViewModel {
-	private let dataCoordinator: DataCoordinator
+final class TravelTabViewModel {
 	
+	private let dataCoordinator: DataCoordinator
 	init(dataCoordinator: DataCoordinator) {
 		self.dataCoordinator = dataCoordinator
 	}
@@ -13,7 +11,7 @@ final class CoordinatorViewViewModel {
 		do {
 			return try await dataCoordinator.getStationsList()
 		} catch {
-			print("Cant fetch stations, --> \(error)")
+			print("Cant fetch stations --> \(error)")
 		}
 		
 		return nil

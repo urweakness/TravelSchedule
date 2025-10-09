@@ -1,9 +1,11 @@
 import SwiftUI
 
-struct CustomNavigationBackButton: ViewModifier {
+struct CustomNavigationBackButtonModifier: ViewModifier {
     
+	// --- DI ---
 	let pop: () -> Void
     
+	// --- body ---
     func body(content: Content) -> some View {
         content
             .navigationBarBackButtonHidden()
