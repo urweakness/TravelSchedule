@@ -2,9 +2,11 @@ import SwiftUI
 
 struct RoutingView: View {
     
+	// --- DI ---
 	@Bindable var manager: TravelRoutingManager
 	let push: (Page) -> Void
     
+	// --- body ---
     var body: some View {
         ViewThatFits {
             HStack(spacing: 16) {
@@ -23,6 +25,7 @@ struct RoutingView: View {
         .padding(.horizontal, 16)
     }
     
+	// --- private subviews ---
     private var fromTitle: String {
         if
             let townName = manager.startTown?.name,
@@ -30,7 +33,7 @@ struct RoutingView: View {
         {
             "\(townName) (\(stationName))"
         } else {
-            "Откуда"
+			.init(localized: .from)
         }
     }
     
@@ -41,50 +44,43 @@ struct RoutingView: View {
         {
             "\(townName) (\(stationName))"
         } else {
-            "Куда"
+			.init(localized: .to)
         }
     }
-    
-    private var fromTextView: some View {
-        HStack {
-            Text(fromTitle)
-                .font(.regular17)
-                .foregroundColor(fromTitle == "Откуда" ? .travelGray : .black)
-                .lineLimit(1)
-            Spacer()
-        }
-        .padding(16)
-        .padding(.horizontal, 5)
-        .background(.white)
-        .simultaneousGesture(
-            TapGesture().onEnded { _ in
-                route(isDestination: false)
-            }
-        )
-    }
-    
-    private var toTextView: some View {
-        HStack {
-            Text(toTitle)
-                .font(.regular17)
-                .foregroundColor(toTitle == "Куда" ? .travelGray : .black)
-                .lineLimit(1)
-            Spacer()
-        }
-        .padding(16)
-        .padding(.horizontal, 5)
-        .background(.white)
-        .simultaneousGesture(
-            TapGesture().onEnded { _ in
-                route(isDestination: true)
-            }
-        )
-    }
+	
+	@ViewBuilder
+	private func textView(isFrom: Bool) -> some View {
+		let title = isFrom ? fromTitle : toTitle
+		let localized = String(localized: isFrom ? .from : .to)
+		
+		HStack {
+			Text(title)
+				.font(.regular17)
+				.foregroundColor(
+					title == localized ? .travelGray : .black
+				)
+				.lineLimit(1)
+				.accessibilityIdentifier(
+					isFrom ?
+					AccessibilityIdentifier.fromLabel.rawValue :
+					AccessibilityIdentifier.toLabel.rawValue
+				)
+			Spacer()
+		}
+		.padding(16)
+		.padding(.horizontal, 5)
+		.background(.white)
+		.simultaneousGesture(
+			TapGesture().onEnded { _ in
+				route(isDestination: !isFrom)
+			}
+		)
+	}
     
     private var textFields: some View {
         VStack(spacing: 0) {
-            fromTextView
-            toTextView
+			textView(isFrom: true)
+			textView(isFrom: false)
         }
     }
     
@@ -105,6 +101,9 @@ struct RoutingView: View {
                         .tint(.travelBlue)
                 }
         }
+		.accessibilityIdentifier(
+			AccessibilityIdentifier.switchLabelsButton.rawValue
+		)
     }
     
     private func route(isDestination: Bool) {
