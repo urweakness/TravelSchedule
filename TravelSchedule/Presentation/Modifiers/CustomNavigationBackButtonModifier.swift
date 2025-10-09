@@ -17,6 +17,9 @@ struct CustomNavigationBackButtonModifier: ViewModifier {
                             .foregroundStyle(.travelBlack)
                             .font(.bold17)
                     }
+					.accessibilityIdentifier(
+						AccessibilityIdentifier.backButton.rawValue
+					)
                 }
             }
     }
