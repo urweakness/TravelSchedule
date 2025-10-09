@@ -86,7 +86,7 @@ struct CarrierInfoView: View {
 				alignment: .leading,
 				spacing: 0
 			) {
-				Text("E-mail")
+				Text(.init(localized: .email))
 					.font(.regular17)
 					.foregroundStyle(.travelBlack)
 				
@@ -111,7 +111,7 @@ struct CarrierInfoView: View {
 				alignment: .leading,
 				spacing: 0
 			) {
-				Text("Телефон")
+				Text(.phone)
 					.font(.regular17)
 					.foregroundStyle(.travelBlack)
 				
