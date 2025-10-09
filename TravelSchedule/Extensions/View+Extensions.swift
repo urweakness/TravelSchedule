@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - View Extensions
 extension View {
 	func customNavigationBackButton(pop: @escaping () -> Void) -> some View {
-		modifier(CustomNavigationBackButton(pop: pop))
+		modifier(CustomNavigationBackButtonModifier(pop: pop))
     }
 	
 	func onScrollPageChange(
