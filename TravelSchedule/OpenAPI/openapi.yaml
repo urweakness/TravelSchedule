@@ -458,9 +458,10 @@ paths:
             text/html:
               schema:
                 $ref: '#/components/schemas/AllStationsResponse'
+
 components:
   schemas:
-  
+
     Format:
       type: string
       enum:
@@ -633,23 +634,40 @@ components:
           type: string
         type:
           type: string
-    
+
+    Transfer:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        short_title:
+          type: string
+        popular_title:
+          type: string
+        code:
+          type: string
+
     Segment:
       type: object
       properties:
       
         from:
           $ref: '#/components/schemas/SegmentFromTo'
-#          $ref: '#/components/schemas/Station'
           
         to:
           $ref: '#/components/schemas/SegmentFromTo'
-#          $ref: '#/components/schemas/Station'
           
         has_transfers:
           type: boolean
           description: Признак наличия пересадок по маршруту.
-        
+
+        transfers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transfer'
+
         stops:
           type: string
         
@@ -664,13 +682,6 @@ components:
           
         arrival_terminal:
           type: string
-
-#        days:
-#          type: string
-#          description: дни отправки (*ежедевно* если каждый день)
-          
-#        except_days:
-#          type: string
           
         departure:
           type: string
