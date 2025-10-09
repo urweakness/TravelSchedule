@@ -1,3 +1,5 @@
+import Foundation
+
 final actor ThreadStationsService: ThreadStationsServiceProtocol {
 	
 	// --- private constants ---
@@ -11,7 +13,7 @@ final actor ThreadStationsService: ThreadStationsServiceProtocol {
 	}
 	
 	// --- internal methods ---
-    func getThreadStations(uid: String) async throws -> ThreadStationsResponse {
+	func getThreadStations(uid: String) async throws -> Result<ThreadStationsResponse, ErrorKind> {
         let response = try await client.getRouteStations(
             query: .init(
                 apikey: apiKey,
@@ -19,6 +21,28 @@ final actor ThreadStationsService: ThreadStationsServiceProtocol {
             )
         )
         
-        return try response.ok.body.json
+		switch response {
+		case .ok(let json):
+			return .success(try json.body.json)
+		case .undocumented(let statusCode, let description):
+			switch statusCode {
+			case 400...499:
+				return .failure(.noInternet)
+			case 500...599:
+				return .failure(.serverError)
+			default:
+				return .failure(
+					.unknown(
+						NSError(
+							domain: "StationListService",
+							code: 0,
+							userInfo: ["description": description])
+					)
+				)
+			}
+			
+		@unknown default:
+			throw URLError(.badServerResponse)
+		}
     }
 }

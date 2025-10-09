@@ -1,3 +1,5 @@
+import Foundation
+
 final actor CopyrightService: CopyrightServiceProtocol {
 	
 	// --- private constants ---
@@ -11,7 +13,7 @@ final actor CopyrightService: CopyrightServiceProtocol {
 	}
 	
 	// --- internal methods ---
-    func getCopyright() async throws -> CopyrightResponse {
+	func getCopyright() async throws -> Result<CopyrightResponse, ErrorKind> {
         let response = try await client.getCopyright(
             query: .init(
 				apikey: apiKey,
@@ -19,6 +21,28 @@ final actor CopyrightService: CopyrightServiceProtocol {
 			)
         )
 
-        return try response.ok.body.json
+		switch response {
+		case .ok(let content):
+			return .success(try content.body.json)
+		case .undocumented(let statusCode, let description):
+			switch statusCode {
+			case 400...499:
+				return .failure(.noInternet)
+			case 500...599:
+				return .failure(.serverError)
+			default:
+				return .failure(
+					.unknown(
+						NSError(
+							domain: "StationListService",
+							code: 0,
+							userInfo: ["description": description])
+					)
+				)
+			}
+			
+		@unknown default:
+			throw URLError(.badServerResponse)
+		}
     }
 }

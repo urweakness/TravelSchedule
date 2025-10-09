@@ -1,3 +1,5 @@
+import Foundation
+
 final actor CarrierService: CarrierServiceProtocol {
 	
 	// --- private constants ---
@@ -14,7 +16,7 @@ final actor CarrierService: CarrierServiceProtocol {
     func getCarrierInfo(
 		code: String,
 		system: CodingSystem
-	) async throws -> CarrierJsonPayload {
+	) async throws -> Result<CarrierJsonPayload, ErrorKind> {
         let response = try await client.getCarrierInfo(
             query: .init(
                 apikey: apiKey,
@@ -23,6 +25,28 @@ final actor CarrierService: CarrierServiceProtocol {
             )
         )
         
-        return try response.ok.body.json
+		switch response {
+		case .ok(let content):
+			return .success(try content.body.json)
+		case .undocumented(let statusCode, let description):
+			switch statusCode {
+			case 400...499:
+				return .failure(.noInternet)
+			case 500...599:
+				return .failure(.serverError)
+			default:
+				return .failure(
+					.unknown(
+						NSError(
+							domain: "StationListService",
+							code: 0,
+							userInfo: ["description": description])
+					)
+				)
+			}
+			
+		@unknown default:
+			throw URLError(.badServerResponse)
+		}
     }
 }

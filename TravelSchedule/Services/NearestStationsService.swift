@@ -1,3 +1,5 @@
+import Foundation
+
 final actor NearestStationsService: NearestStationsServiceProtocol {
 	
 	// --- private constants ---
@@ -15,7 +17,7 @@ final actor NearestStationsService: NearestStationsServiceProtocol {
         lat: Double,
         lng: Double,
         distance: Int
-    ) async throws -> NearestStations {
+	) async throws -> Result<NearestStations, ErrorKind> {
         let response = try await client.getNearestStations(query: .init(
                 apikey: apiKey,
                 lat: lat,
@@ -24,6 +26,28 @@ final actor NearestStationsService: NearestStationsServiceProtocol {
             )
         )
         
-        return try response.ok.body.json
+		switch response {
+		case .ok(let content):
+			return .success(try content.body.json)
+		case .undocumented(let statusCode, let description):
+			switch statusCode {
+			case 400...499:
+				return .failure(.noInternet)
+			case 500...599:
+				return .failure(.serverError)
+			default:
+				return .failure(
+					.unknown(
+						NSError(
+							domain: "StationListService",
+							code: 0,
+							userInfo: ["description": description])
+					)
+				)
+			}
+			
+		@unknown default:
+			throw URLError(.badServerResponse)
+		}
     }
 }
