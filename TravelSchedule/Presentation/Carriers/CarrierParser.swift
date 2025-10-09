@@ -4,27 +4,27 @@ import Foundation
 final class CarrierParser {
 	// --- parsing response ---
 	func parseResponse(
-		_ response: ScheduleBetweenStationsResponse,
-		fetchThreadStations: @escaping @Sendable (String) async throws -> ThreadStationsResponse?
-	) async -> [CarrierModel] {
+		_ response: ScheduleBetweenStationsResponse
+	) -> [CarrierModel] {
 		var result = [CarrierModel]()
 		for segment in response.segments ?? [] {
 			guard
-				let carrier = await parseSegment(
-					segment: segment,
-					fetchThreadStations: fetchThreadStations
-				)
+				let carrier = parseSegment(segment: segment)
 			else { continue }
 			
 			result.append(carrier)
 		}
 		return result
 	}
-	
-	private func parseSegment(
-		segment: Components.Schemas.Segment?,
-		fetchThreadStations: @escaping @Sendable (String) async throws -> ThreadStationsResponse?
-	) async -> CarrierModel? {
+}
+
+// MARK: - CarrierParser Extensions
+
+// --- private subparsers ---
+private extension CarrierParser {
+	func parseSegment(
+		segment: Components.Schemas.Segment?
+	) -> CarrierModel? {
 		// --- safe unwrap ---
 		guard
 			let segment,
@@ -49,19 +49,7 @@ final class CarrierParser {
 		let duration = convertSecondsToHours(durationSecs)
 		
 		// --- transfer info parse ---
-		let transferInfo = (segment.has_transfers ?? false) ? "С пересадками" : nil
-//		var transferInfo: String?
-//		if
-//			segment.has_transfers ?? false,
-//			let code = segment.thread?.uid
-//		{
-//			do {
-//				let threadStationReponse = try await fetchThreadStations(code)
-//				transferInfo = parseThreadStationsResponse(threadStationReponse)
-//			} catch {
-//				print("Error parsing thread stations: \(error.localizedDescription)")
-//			}
-//		}
+		let transferInfo = parseThreadStationsResponse(segment.transfers)
 		
 		// --- row carrier model ---
 		let carrierModel = CarrierModel(
@@ -81,81 +69,38 @@ final class CarrierParser {
 	}
 	
 	// --- returns parsed transferInfo for CarrierModel ---
-//	private func parseThreadStationsResponse(_ response: ThreadStationsResponse?) -> String? {
-//		guard let response else { return nil }
-//		guard let stops = response.stops else { return nil }
-//		print(String(describing: stops))
-//		if stops.count > 2 {
-//			if
-//				let transferPoint = stops.last,
-//				let transferPointName = transferPoint.station?.title
-//			{
-//				return "С пересадкой в \(transferPointName)"
-//			} else {
-//				return nil
-//			}
-//		} else {
-//			return "С пересадками"
-//		}
-//	}
+	func parseThreadStationsResponse(_ transfers: [Components.Schemas.Transfer]?) -> String? {
+		guard
+			let transfers,
+			transfers.count > 0
+		else { return nil }
+		
+		let pluralized = String(
+			localized: transfers.count > 1 ? .transfersAt : .transfersAt
+		)
+		
+		return pluralized + " " + transfers.compactMap(\.title).joined(separator: ", ")
+	}
 }
-
-// MARK: - CarrierParser Extensions
 
 // --- private helpers ---
 private extension CarrierParser {
-	func declineHour(_ number: Int) -> String {
-		let lastDigit = number % 10
+	func pluralizeHour(_ number: Int) -> String {
 		let lastTwoDigits = number % 100
 		
-		if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
-			return "часов"
-		}
-		
-		switch lastDigit {
-		case 1:
-			return "час"
-		case 2, 3, 4:
-			return "часа"
-		default:
-			return "часов"
-		}
+		return .init(localized: .hours(lastTwoDigits))
 	}
 	
-	func declineMinute(_ number: Int) -> String {
-		let lastDigit = number % 10
+	func pluzalizeMinute(_ number: Int) -> String {
 		let lastTwoDigits = number % 100
 		
-		if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
-			return "минут"
-		}
-		
-		switch lastDigit {
-		case 1:
-			return "минута"
-		case 2, 3, 4:
-			return "минуты"
-		default:
-			return "минут"
-		}
+		return .init(localized: .minutes(lastTwoDigits))
 	}
 	
-	func declineDays(_ number: Int) -> String {
-		let lastDigit = number % 10
+	func pluralizeDays(_ number: Int) -> String {
 		let lastTwoDigits = number % 100
 		
-		if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
-			return "дней"
-		}
-		
-		switch lastDigit {
-		case 1:
-			return "день"
-		case 2, 3, 4:
-			return "дня"
-		default:
-			return "дней"
-		}
+		return .init(localized: .days(lastTwoDigits))
 	}
 	
 	func extractTimeFromTimeString(_ timeString: String) -> String? {
@@ -186,9 +131,9 @@ private extension CarrierParser {
 		let hours = (totalSeconds % 86_400) / 3600
 		let minutes = (totalSeconds % 3600) / 60
 
-		let daysString = days == 0 ? "" : "\(days) \(declineDays(days))"
-		let hoursString = hours == 0 ? "" : "\(hours) \(declineHour(hours))"
-		let minutesString = minutes == 0 ? "" : "\(minutes) \(declineMinute(minutes))"
+		let daysString = days == 0 ? "" : pluralizeDays(days)
+		let hoursString = hours == 0 ? "" : pluralizeHour(hours)
+		let minutesString = minutes == 0 ? "" : pluzalizeMinute(minutes)
 		
 		return [daysString, hoursString, minutesString]
 			.filter { !$0.isEmpty }
