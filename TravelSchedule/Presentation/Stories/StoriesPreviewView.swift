@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct StoriesPreviewView: View {
-    
-	// --- envs ---
+	// --- DI ---
 	@Bindable var manager: StoriesManager
 	let present: (FullScreenCover) -> Void
     
@@ -11,20 +10,29 @@ struct StoriesPreviewView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(alignment: .center, spacing: 16) {
                 ForEach(manager.stories) { story in
-                    StoryPreviewView(
-                        story: story
-                    )
-                    .onTapGesture {
-                        openStory(withID: story.id)
-                    }
+					content(story)
                 }
             }
             .padding(.horizontal, 16)
         }
         .frame(height: 140)
         .padding(.vertical, 24)
+		.accessibilityIdentifier(
+			AccessibilityIdentifier.storiesPreviewScroll.rawValue
+		)
     }
     
+	// --- private subviews ---
+	private func content(_ story: StoryModel) -> some View {
+		Button {
+			openStory(withID: story.id)
+		} label: {
+			StoryPreviewContentView(
+				story: story
+			)
+		}
+	}
+	
     // --- private helpers ---
     private func openStory(withID storyUUIDString: String) {
         let storyIndex = manager.stories.firstIndex(where: { $0.id == storyUUIDString }) ?? 0
