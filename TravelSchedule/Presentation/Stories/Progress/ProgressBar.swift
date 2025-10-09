@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ProgressBar: View {
 	
-	// MARK: - Private(set) Properties
+	// --- DI ---
 	let storyPartsCount: Int
 	let progress: CGFloat
 	
-	// MARK: - Body
+	// --- body ---
 	var body: some View {
 		GeometryReader {
 			let size = $0.size
@@ -35,6 +35,7 @@ struct ProgressBar: View {
 	}
 }
 
+// MARK: - Private Mask
 private struct MaskView: View {
 	
 	let numOfSections: Int
@@ -48,6 +49,7 @@ private struct MaskView: View {
 	}
 }
 
+// MARK: - Mask Fragment
 private struct MaskFragmentView: View {
 	var body: some View {
 		RoundedRectangle(cornerRadius: .progressBarCornerRadius)
