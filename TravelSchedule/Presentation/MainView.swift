@@ -1,10 +1,12 @@
 import SwiftUI
 
-struct MainView: View {
+struct MainView: View{
     
 	// --- DI ---
 	@Bindable var manager: TravelRoutingManager
-	let coordinator: Coordinator
+	let storiesPreviewContent: () -> StoriesPreviewView
+	let routingContent: () -> RoutingView
+	let push: (Page) -> Void
     
     // --- body ---
     @ViewBuilder
@@ -14,9 +16,9 @@ struct MainView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                coordinator.build(page: .storiesPreview)
-
-                coordinator.build(page: .routing)
+				storiesPreviewContent()
+				
+				routingContent()
                 
 				if manager.travelPointsFilled {
                     findButtonView
@@ -33,18 +35,21 @@ struct MainView: View {
     // --- private subviews ---
     private var findButtonView: some View {
         Button(action: {
-			coordinator.push(page: .carriersChoose)
-            manager.isDestination = nil
+			push(.carriersChoose)
+			manager.isDestination = nil
         }) {
-            Text("Найти")
-                .font(.bold17)
-                .foregroundColor(.white)
-                .padding(20)
+			Text(.find)
+				.font(.bold17)
+				.foregroundColor(.white)
+				.padding(20)
         }
         .padding(.horizontal)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(.travelBlue)
         )
+		.accessibilityIdentifier(
+			AccessibilityIdentifier.findButton.rawValue
+		)
     }
 }
