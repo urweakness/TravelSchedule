@@ -4,6 +4,6 @@ struct Town: TravelPoint {
 	let code: String
     
     static var noContentTitleText: String {
-        "Город не найден"
+		.init(localized: .noTownFound)
     }
 }
