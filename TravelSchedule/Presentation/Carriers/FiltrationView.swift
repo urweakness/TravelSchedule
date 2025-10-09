@@ -68,7 +68,7 @@ struct FiltrationView: View {
     // --- private views ---
     private var confirmButton: some View {
         Button(action: confirmAction) {
-            Text("Применить")
+            Text(.apply)
         }
         .buttonStyle(
             WideButtonStyle()
