@@ -64,6 +64,9 @@ struct LazyHScrollView<Content: View>: View {
 						proxy: proxy
 					)
 				}
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.storiesScroll.rawValue
+				)
 				// --- scroll to current on appear ---
 				.onAppear {
 					DispatchQueue.main.async {
