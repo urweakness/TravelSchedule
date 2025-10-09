@@ -2,33 +2,33 @@ import SwiftUI
 
 struct TravelListCell<V: View>: View {
     
-	// MARK: - State Properties
-    @State var text: String
-    @State var rightView: () -> V
-	
-	// MARK: - Constant Actions
+	// --- DI ---
+	let text: String
 	let buttonAction: (() -> Void)?
-	
-	init(
-		text: String,
-		buttonAction: (() -> Void)?,
-		rightView: @escaping () -> V,
-	) {
-		self.text = text
-		self.rightView = rightView
-		self.buttonAction = buttonAction
-	}
+	let rightView: () -> V
     
+	// --- body ---
     var body: some View {
-        Button(action: buttonAction ?? {}){
-            HStack {
-                Text(text)
-                    .font(.regular17)
-                Spacer()
-                rightView()
-            }
-            .padding(.vertical, 12)
-        }
-        .buttonStyle(.plain)
+		if let buttonAction {
+			Button(action: buttonAction){
+				content
+			}
+			.buttonStyle(.plain)
+		} else {
+			content
+		}
     }
+	
+	private var content: some View {
+		HStack {
+			Text(text)
+				.font(.regular17)
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.settingsLabel.rawValue
+				)
+			Spacer()
+			rightView()
+		}
+		.padding(.vertical, 12)
+	}
 }
