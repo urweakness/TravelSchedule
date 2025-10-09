@@ -155,7 +155,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 					var style = document.createElement('style');
 					style.id = 'native-theme-style';
 		
-					// базовые правила — можно расширить
+					// basic rules — can extend
 					var darkCSS = `
 						html, body, * {
 							background-color: #1B1C22 !important;
@@ -180,10 +180,10 @@ struct WebViewRepresentable: UIViewRepresentable {
 					style.innerHTML = (theme === 'dark') ? darkCSS : lightCSS;
 					if (document.head) document.head.appendChild(style);
 		
-					// метка для проверки из native
+					// target to check from native
 					document.documentElement.setAttribute('data-native-theme', theme);
 		
-					// Подмена matchMedia чтобы сайт, проверяющий prefers-color-scheme, получил корректный ответ
+					// Replacing matchMedia, site that receives preferes-color-sceheme, receive corrent response
 					(function(origMatchMedia, currentTheme) {
 						window.matchMedia = function(query) {
 							if (query === '(prefers-color-scheme: dark)') {
