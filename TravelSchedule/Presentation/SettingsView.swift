@@ -2,13 +2,13 @@ import SwiftUI
 
 struct SettingsView: View {
     
-	// MARK: - State Storage
+	// --- storage ---
     @AppStorage("darkThemeIsActive") private var theme: Bool = false
 	
-	// MARK: - DI States
+	// --- DI ---
 	let push: (Page) -> Void
     
-	// MARK: - Body
+	// --- body ---
     var body: some View {
         VStack {
             themeSwitch
@@ -21,33 +21,55 @@ struct SettingsView: View {
         .animation(.linear(duration: 0.15), value: theme)
     }
     
-	// MARK: - Private Views
+	// --- private subviews ---
     private var themeSwitch: some View {
-        TravelListCell(text: "Темная тема", buttonAction: nil) {
+        TravelListCell(
+			text: .init(localized: .darkTheme),
+			buttonAction: nil
+		) {
             Toggle("", isOn: $theme)
+				.labelsHidden()
                 .tint(.travelBlue)
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.themeSwitch.rawValue
+				)
         }
     }
     
     private var userAgreement: some View {
         TravelListCell(
-            text: "Пользовательское соглашение",
+			text: .init(localized: .userAgreement),
             buttonAction: {
 				push(.userAgreement)
 			}
 		) {
             Image(systemName: "chevron.right")
                 .font(.bold17)
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.chevronRight.rawValue
+				)
         }
     }
     
     private var about: some View {
         VStack(spacing: 16) {
-            Text("Приложение использует API «Яндекс.Расписания»")
-            Text("Версия 1.0 (beta)")
+            Text(.appUsage)
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.about.rawValue
+				)
+            Text(.version)
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.version.rawValue
+				)
         }
         .font(.regular12)
         .foregroundStyle(.travelBlack)
         .padding(.bottom, 24)
     }
 }
+
+#if DEBUG
+#Preview {
+	SettingsView(push: {_ in})
+}
+#endif
