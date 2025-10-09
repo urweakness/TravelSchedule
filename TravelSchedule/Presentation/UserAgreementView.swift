@@ -17,7 +17,7 @@ struct UserAgreementView: View {
 			Color.travelWhite
 				.ignoresSafeArea()
 			
-			if let url = URL(string: "https://yandex.ru/legal/practicum_offer") {
+			if let url = URL(string: GlobalConstants.userAgreementURLString) {
 				WebViewRepresentable(
 					url: url,
 					isLoading: $isLoading,
@@ -32,7 +32,7 @@ struct UserAgreementView: View {
 				}
 				
 			} else {
-				Text("Sorry, this document is currently unavailable.")
+				Text(.sorryThisDocumentIsCurrentlyUnavailable)
 					.font(.bold34)
 					.foregroundStyle(.travelBlack)
 			}
