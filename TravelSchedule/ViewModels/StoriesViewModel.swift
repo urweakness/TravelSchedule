@@ -16,13 +16,12 @@ final class StoriesViewModel {
 	var dismiss: DismissAction?
 
 	// --- internal init ---
-    init(
-		manager: StoriesManager,
-		secondsPerStoryPart: TimeInterval = 5
-	) {
+    init(manager: StoriesManager) {
 		self.manager = manager
         self.currentStoryPartIndex = 0
-        self.timer = TimerManager(secondsPerStoryPart: secondsPerStoryPart)
+		self.timer = TimerManager(
+			secondsPerStoryPart: GlobalConstants.storyPreviewTimeout
+		)
         self.timer.delegate = self
     }
 	
