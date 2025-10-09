@@ -9,16 +9,18 @@ enum Filter {
             departTimeFilter.description
             
         case .withTransfer(let yes):
-            yes ? "Да" : "Нет"
+            yes ? 
+			String(localized: .yes) :
+			String(localized: .no)
         }
     }
     
     var title: String {
         switch self {
         case .departTime:
-            "Время отправления"
+			.init(localized: .departTime)
         case .withTransfer:
-            "Показывать варианты с пересадками"
+			.init(localized: .showWithTransfers)
         }
     }
     
@@ -31,13 +33,13 @@ enum Filter {
         var description: String {
             switch self {
             case .morning:
-                "Утро 06:00 - 12:00"
+				.init(localized: .morning)
             case .day:
-                "День 12:00 - 18:00"
+				.init(localized: .day)
             case .evening:
-                "Вечер 18:00 - 00:00"
+				.init(localized: .evening)
             case .night:
-                "Ночь 00:00 - 06:00"
+				.init(localized: .night)
             }
         }
 		
