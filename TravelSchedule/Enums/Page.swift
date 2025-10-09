@@ -19,13 +19,13 @@ enum Page: Identifiable, Hashable {
 	var navigationTitle: String {
 		switch self {
 		case .townChoose:
-			"Выбор города"
+			.init(localized: .townChoose)
 		case .stationChoose:
-			"Выбор станции"
+			.init(localized: .stationChoose)
 		case .userAgreement:
-			"Пользовательское соглашение"
+			.init(localized: .userAgreement)
 		case .carrierInfo:
-			"Информация о перевозчике"
+			.init(localized: .carrierInfo)
 		default:
 			""
 		}
