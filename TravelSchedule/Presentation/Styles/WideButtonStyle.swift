@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WideButtonStyle: ButtonStyle {
-    // MARK: - Body
+    // --- body ---
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.bold17)
