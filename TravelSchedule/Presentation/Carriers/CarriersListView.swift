@@ -110,7 +110,7 @@ struct CarriersListView: View {
         Button(action: {
 			push(.filtration)
         }) {
-            Text("Уточнить время")
+            Text(.checkTime)
         }
         .buttonStyle(
             WideButtonStyle()
