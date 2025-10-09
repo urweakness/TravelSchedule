@@ -27,7 +27,7 @@ final actor DataFetcher {
 extension DataFetcher {
 		
 	// --- getStationsList ---
-    func getStationsList(format: Format = .json) async throws -> AllStationsResponse {
+	func getStationsList(format: Format = .json) async throws -> Result<AllStationsResponse, ErrorKind> {
         do {
             let stationsListService = StationsListService(
                 client: try client(),
@@ -43,7 +43,7 @@ extension DataFetcher {
     }
     
 	// --- getThreadStations ---
-	func getThreadStations(by uid: String) async throws -> ThreadStationsResponse {
+	func getThreadStations(by uid: String) async throws -> Result<ThreadStationsResponse, ErrorKind> {
         do {
             let threadStationsService = ThreadStationsService(
                 client: try client(),
@@ -60,7 +60,7 @@ extension DataFetcher {
     }
     
 	// --- getStationSchedule ---
-	func getStationSchedule(station: String) async throws -> ScheduleResponse {
+	func getStationSchedule(station: String) async throws -> Result<ScheduleResponse, ErrorKind> {
         do {
             let stationScheduleService = StationScheduleService(
                 client: try client(),
@@ -81,7 +81,7 @@ extension DataFetcher {
 		lat: Double,
 		lng: Double,
 		distance: Int
-	) async throws -> NearestStations {
+	) async throws -> Result<NearestStations, ErrorKind> {
         do {
             let nearestStationsService = NearestStationsService(
                 client: try client(),
@@ -103,7 +103,7 @@ extension DataFetcher {
 	func getScheduleBetweenStations(
 		from: String,
 		to: String
-	) async throws -> ScheduleBetweenStationsResponse {
+	) async throws -> Result<ScheduleBetweenStationsResponse, ErrorKind> {
         do {
             let segmentsService = ScheduleBetweenStationsService(
                 client: try client(),
@@ -121,7 +121,7 @@ extension DataFetcher {
     }
     
 	// --- getCopyright ---
-	func getCopyright() async throws -> CopyrightResponse {
+	func getCopyright() async throws -> Result<CopyrightResponse, ErrorKind> {
         do {
             let copyrightService = CopyrightService(
                 client: try client(),
@@ -138,7 +138,7 @@ extension DataFetcher {
     func getNearestCity(
 		lat: Double,
 		lng: Double
-	) async throws -> NearestCityResponse {
+	) async throws -> Result<NearestCityResponse, ErrorKind> {
         do {
             let nearestSettlementService = NearestSettlementService(
                 client: try client(),
@@ -159,7 +159,7 @@ extension DataFetcher {
 	func getCarrierInfo(
 		carrierCode: String,
 		codingSystem: CodingSystem
-	) async throws -> CarrierJsonPayload {
+	) async throws -> Result<CarrierJsonPayload, ErrorKind> {
         do {
             let carrierService = CarrierService(
                 client: try client(),
