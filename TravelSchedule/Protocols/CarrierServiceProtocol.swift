@@ -2,5 +2,5 @@ protocol CarrierServiceProtocol {
     func getCarrierInfo(
         code: String,
         system: CodingSystem
-    ) async throws -> CarrierJsonPayload
+	) async throws -> Result<CarrierJsonPayload, ErrorKind>
 }

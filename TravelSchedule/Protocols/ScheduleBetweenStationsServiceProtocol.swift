@@ -2,5 +2,5 @@ protocol ScheduleBetweenStationsServiceProtocol {
     func search(
         from: String,
         to: String
-    ) async throws -> ScheduleBetweenStationsResponse
+	) async throws -> Result<ScheduleBetweenStationsResponse, ErrorKind>
 }

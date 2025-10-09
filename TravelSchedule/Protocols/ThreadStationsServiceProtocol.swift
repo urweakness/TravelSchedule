@@ -1,3 +1,3 @@
 protocol ThreadStationsServiceProtocol {
-    func getThreadStations(uid: String) async throws -> ThreadStationsResponse
+	func getThreadStations(uid: String) async throws -> Result<ThreadStationsResponse, ErrorKind>
 }

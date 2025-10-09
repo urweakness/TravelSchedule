@@ -3,5 +3,5 @@ protocol NearestStationsServiceProtocol {
         lat: Double,
         lng: Double,
         distance: Int
-    ) async throws -> NearestStations
+	) async throws -> Result<NearestStations, ErrorKind>
 }
