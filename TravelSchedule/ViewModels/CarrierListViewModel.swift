@@ -8,19 +8,18 @@ final class CarrierListViewModel {
 	// --- internal ---
 	let manager: TravelRoutingManager
 	
-	// --- private ---
-	private let dataCoordinator: DataCoordinator
-	
 	// --- private(set) properties ---
 	private(set) var filteredCarriers = [CarrierModel]()
 	private(set) var carriers = [CarrierModel]()
 	
 	// --- private constants ---
+	private let dataCoordinator: DataCoordinator
 	private let pushCarrier: () -> Void
 	
 	private let parser = CarrierParser()
 	private let filterApplier = CarrierFilterApplier()
 	
+	// --- internal computed properties ---
 	var title: String {
 		manager.title
 	}
@@ -62,11 +61,8 @@ final class CarrierListViewModel {
 	}
 	
 	// --- async task fetch result parsing ---
-	func parseResponse(_ response: ScheduleBetweenStationsResponse) async {
-		let carriers = await parser.parseResponse(
-			response,
-			fetchThreadStations: dataCoordinator.getThreadStations
-		)
+	func parseResponse(_ response: ScheduleBetweenStationsResponse) {
+		let carriers = parser.parseResponse(response)
 		mutateCarriers { _ in
 			carriers
 		}
