@@ -8,8 +8,9 @@ struct StoryPartView: View {
 	// --- body ---
     var body: some View {
         imageView
-            .overlay(alignment: .bottom) {
+			.overlay(alignment: .bottomLeading) {
                 storyDescription
+					.background(textBackground)
             }
     }
 }
@@ -20,12 +21,23 @@ struct StoryPartView: View {
 // --- subviews ---
 private extension StoryPartView {
     var storyDescription: some View {
-        VStack(spacing: 16) {
-            titleView
-            descriptionView
+        VStack(
+			alignment: .leading,
+			spacing: 16
+		) {
+			titleView
+			descriptionView
         }
         .padding(.bottom, 40)
     }
+	
+	var textBackground: some View {
+		Rectangle()
+			.fill(.ultraThickMaterial)
+			.opacity(0.6)
+			.blur(radius: 30, opaque: false)
+			.contentTransition(.opacity)
+	}
     
     var titleView: some View {
         Text(storyPart.title)
