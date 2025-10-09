@@ -2,15 +2,16 @@ import SwiftUI
 
 struct CheckBoxButtonView: View {
     
-    // MARK: - Binding Internal Propeties
+	// --- DI ---
+    // bindings
     @Binding var isSelected: Bool
     
-    // MARK: - Internal Constants
+    // constants
     let filter: Filter
     let title: String
     let action: () -> Void
     
-    // MARK: - Body
+    // --- body ---
     var body: some View {
         Button(action: action) {
             Text(title)
@@ -26,7 +27,7 @@ struct CheckBoxButtonView: View {
         )
     }
     
-    // MARK: - Private Views
+    // --- private subviews ---
     @ViewBuilder
     private func makeCheckboxView(
         _ isSelected: Bool,
