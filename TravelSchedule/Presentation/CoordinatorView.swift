@@ -4,7 +4,18 @@ struct CoordinatorView: View {
 	
 	// MARK: - Private States
     @StateObject private var coordinator: Coordinator
-	@State private var viewModel: CoordinatorViewViewModel
+	@State private var error: ErrorKind? {
+		didSet {
+			switch error {
+			case nil:
+				break
+			default:
+				if let error {
+					coordinator.present(fullScreenCover: .error(error))
+				}
+			}
+		}
+	}
     
     var body: some View {
 		#warning(
@@ -18,22 +29,28 @@ struct CoordinatorView: View {
 					SOLID intruder.
 			"""
 		)
-        NavigationStack(path: $coordinator.path) {
+		NavigationStack(path: $coordinator.path) {
             coordinator.build(page: .tabView)
                 .navigationDestination(for: Page.self) { page in
                     coordinator.build(page: page)
                 }
-                .fullScreenCover(item: $coordinator.fullScreenCover) { fullScreenCover in
+				.fullScreenCover(item: $coordinator.fullScreenCover) { fullScreenCover in
                     coordinator.build(fullScreenCover: fullScreenCover)
                 }
         }
 		.navigationBarBackButtonHidden()
-		.task(priority: .high) {
-			guard
-				coordinator.dependencies.appManager.stationList == nil
-			else { return }
-			coordinator.dependencies.appManager.stationList = await viewModel
-				.fetchAllStations()
+		
+		.animation(.default, value: error)
+		.onChange(of: coordinator.dependencies.dataCoordinator.loader.loadingState) { _, newValue in
+			switch newValue {
+			case .error(let newError):
+				error = newError
+			default:
+				error = nil
+			}
+		}
+		.onChange(of: coordinator.dependencies.connectionMonitor.isConnected) { _, newValue in
+			error = newValue ? nil : .noInternet
 		}
     }
 }
@@ -46,6 +63,7 @@ extension CoordinatorView {
         let storiesManager: StoriesManager
         let travelManager = TravelRoutingManager()
 		let dataCoordinator = DataCoordinator()
+		let connectionMonitor = ConnectionMonitor()
         
         switch appManager.appState {
         case .stage:
@@ -58,21 +76,18 @@ extension CoordinatorView {
             appManager: appManager,
             storiesManager: storiesManager,
             travelManager: travelManager,
-			dataCoordinator: dataCoordinator
+			dataCoordinator: dataCoordinator,
+			connectionMonitor: connectionMonitor
         )
 	
         _coordinator = StateObject(
             wrappedValue: Coordinator(dependencies: dependencies)
         )
-		
-		_viewModel = State(
-			initialValue: CoordinatorViewViewModel(
-				dataCoordinator: dependencies.dataCoordinator
-			)
-		)
     }
 }
 
+#if DEBUG
 #Preview {
     CoordinatorView()
 }
+#endif
