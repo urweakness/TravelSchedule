@@ -6,4 +6,12 @@ struct Town: TravelPoint {
     static var noContentTitleText: String {
 		.init(localized: .noTownFound)
     }
+	
+	init?(name: String?, code: String?) {
+		guard
+			let name, let code
+		else { return nil }
+		self.name = name
+		self.code = code
+	}
 }
