@@ -6,6 +6,8 @@ final actor StationsListService: StationsListServiceProtocol {
 	private let client: Client
 	private let apiKey: String
 	
+	private let decoder = JSONDecoder()
+	
 	// --- internal init ---
 	init(client: Client, apiKey: String) {
 		self.client = client
@@ -37,7 +39,10 @@ final actor StationsListService: StationsListServiceProtocol {
 						data.append(contentsOf: chunk)
 					}
 					
-					let response = try JSONDecoder().decode(AllStationsResponse.self, from: data)
+					let response = try decoder.decode(
+						AllStationsResponse.self,
+						from: data
+					)
 					return .success(response)
 					
 				}
