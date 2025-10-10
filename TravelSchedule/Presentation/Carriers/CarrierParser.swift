@@ -6,15 +6,7 @@ final class CarrierParser {
 	func parseResponse(
 		_ response: ScheduleBetweenStationsResponse
 	) -> [CarrierModel] {
-		var result = [CarrierModel]()
-		for segment in response.segments ?? [] {
-			guard
-				let carrier = parseSegment(segment: segment)
-			else { continue }
-			
-			result.append(carrier)
-		}
-		return result
+		(response.segments ?? []).compactMap(parseSegment)
 	}
 }
 
