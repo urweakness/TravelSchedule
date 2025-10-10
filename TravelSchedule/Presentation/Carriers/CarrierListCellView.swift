@@ -77,8 +77,7 @@ struct CarrierListCellView: View {
 			timeDividerView
 			endTimeView
 		}
-		.padding(.trailing, 14)
-		.padding(.bottom, 14)
+		.padding([.trailing, .bottom], 14)
 	}
 	
     @ViewBuilder
@@ -145,11 +144,13 @@ struct CarrierListCellView: View {
 		guard let logoURLString = carrier.logoURLString else { return }
 		
 		let loader = DataLoader()
-		guard let imageURL = URL(string: logoURLString) else { return }
+		
 		guard
+			let imageURL = URL(string: logoURLString),
 			let data = try? await loader.downloadData(url: imageURL),
 			let uiImage = UIImage(data: data)
 		else { return }
+		
 		carrierLogoImage = Image(uiImage: uiImage)
 	}
 }
