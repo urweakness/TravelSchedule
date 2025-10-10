@@ -1,6 +1,6 @@
 import DeveloperToolsSupport
 
-enum ErrorKind {
+enum ErrorKind: Error {
     
     case noInternet
     case serverError
@@ -9,11 +9,11 @@ enum ErrorKind {
     var description: String {
         switch self {
         case .noInternet:
-            return "Нет интернета"
+			.init(localized: .noInternet)
         case .serverError:
-            return "Ошибка сервера"
+			.init(localized: .serverError)
         case .unknown(let error):
-            return error.localizedDescription
+            error.localizedDescription
         }
     }
     

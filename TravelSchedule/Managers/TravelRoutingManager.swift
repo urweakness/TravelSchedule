@@ -1,17 +1,19 @@
 import SwiftUI
 
-final class TravelRoutingManager: ObservableObject {
-    @Published var destinationTown: Town?
-    @Published var destinationStation: Station?
+@MainActor
+@Observable
+final class TravelRoutingManager {
+    var destinationTown: Town?
+	var destinationStation: Station?
     
-    @Published var startTown: Town?
-    @Published var startStation: Station?
+    var startTown: Town?
+    var startStation: Station?
     
-    @Published var isDestination: Bool?
+    var isDestination: Bool?
     
-    @Published var choosedCarrier: String?
+	var choosedCarrier: CarrierModel = .mock
     
-    @Published var filter: FilterModel?
+    var filter: FilterModel?
     
     @inlinable
     var travelPointsFilled: Bool {
@@ -27,6 +29,10 @@ final class TravelRoutingManager: ObservableObject {
     
     @inlinable
     var title: String {
-        "\(startTown?.name ?? "")(\(startStation?.name ?? "")) → \(destinationTown?.name ?? "")(\(destinationStation?.name ?? ""))"
+        "\(startTown?.name ?? "") (\(startStation?.name ?? "")) → \(destinationTown?.name ?? "") (\(destinationStation?.name ?? ""))"
     }
+	
+	func clearFilter() {
+		filter = nil
+	}
 }

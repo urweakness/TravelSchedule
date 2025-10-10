@@ -1,24 +1,17 @@
 enum GlobalConstants {
     static let apiKey = "b5389546-05d0-460f-834e-5530e6a3fda6"
-    static let storyPreviewTimeout: UInt8 = 10
+	static let userAgreementURLString = "https://yandex.ru/legal/practicum_offer"
+	static let storyPreviewTimeout: Double = 10
 }
 
-
-let templateText = "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text"
 let mockStories: [StoryModel] = [
 	.init(
 		previewImageResource: ._1PreviewIllustration,
 		storyParts: [
 			.init(
 				fullImageResource: ._11BigIllustration,
-				title: templateText,
-				description: templateText,
-				isCheckedOut: false
-			),
-			.init(
-				fullImageResource: ._12BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Хорошо - это когда хорошо",
+				description: "Как же было бы хорошо, если бы документация API не расходилась с реальностью",
 				isCheckedOut: false
 			)
 		]
@@ -28,14 +21,20 @@ let mockStories: [StoryModel] = [
 		storyParts: [
 			.init(
 				fullImageResource: ._21BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Ночь, улица, фонарь, аптека",
+				description: "Хорошо - это когда, как минимум, неплохо",
 				isCheckedOut: false
 			),
 			.init(
 				fullImageResource: ._22BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Бессмысленный и тусклый свет",
+				description: "Хорошо - это когда сторисы имеют применение",
+				isCheckedOut: false
+			),
+			.init(
+				fullImageResource: ._81BigIllustration,
+				title: "Продам гараж",
+				description: "Хорошо - это когда ТЗ неизменно на протяжении всего проекта",
 				isCheckedOut: false
 			)
 		]
@@ -46,14 +45,14 @@ let mockStories: [StoryModel] = [
 		storyParts: [
 			.init(
 				fullImageResource: ._31BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "А что тут еще сказать?",
+				description: "Покупайте биткоины!",
 				isCheckedOut: false
 			),
 			.init(
 				fullImageResource: ._32BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Выйду ночью в поле с конем",
+				description: "Ночкой темной тихо пойдем",
 				isCheckedOut: false
 			)
 		]
@@ -64,14 +63,14 @@ let mockStories: [StoryModel] = [
 		storyParts: [
 			.init(
 				fullImageResource: ._41BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Погода",
+				description: "Сегодня слегка ветренно",
 				isCheckedOut: false
 			),
 			.init(
 				fullImageResource: ._42BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "🤔",
+				description: "Завтра - дождь",
 				isCheckedOut: false
 			)
 		]
@@ -82,14 +81,14 @@ let mockStories: [StoryModel] = [
 		storyParts: [
 			.init(
 				fullImageResource: ._51BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Может",
+				description: "Может дифференциальное уравнение?",
 				isCheckedOut: false
 			),
 			.init(
 				fullImageResource: ._52BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "А может не может?",
+				description: "Может и не может",
 				isCheckedOut: false
 			)
 		]
@@ -100,14 +99,14 @@ let mockStories: [StoryModel] = [
 		storyParts: [
 			.init(
 				fullImageResource: ._61BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Слишком много текста",
+				description: "Еще больше",
 				isCheckedOut: false
 			),
 			.init(
 				fullImageResource: ._62BigIllustration,
-				title: templateText,
-				description: templateText,
+				title: "Текст",
+				description: "Sample text",
 				isCheckedOut: false
 			)
 		]

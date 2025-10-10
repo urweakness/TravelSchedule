@@ -2,19 +2,19 @@ import SwiftUI
 
 struct FiltrationView: View {
     
-    // MARK: - State Private Properties
+    // --- private states ---
     @State private var selectedDepartFilters: Set<Filter.DepartTimeFilter> = []
     @State private var selectedTransferFilter: Bool?
     
-    // MARK: - Private Constants
+    // --- private constants ---
     private let departFilters: [Filter.DepartTimeFilter] = [.morning, .day, .evening, .night]
     private let transferFilters: [Bool] = [true, false]
     
-	// MARK: - DI States
-    @ObservedObject var manager: TravelRoutingManager
-    @EnvironmentObject private var coordinator: Coordinator
+	// --- DI ---
+	@Bindable var manager: TravelRoutingManager
+	let pop: () -> Void
     
-	// MARK: - Private Getters
+	// --- private getters ---
     private var departTimeTitle: String {
         Filter.departTime(.day).title
     }
@@ -23,7 +23,7 @@ struct FiltrationView: View {
         Filter.withTransfer(true).title
     }
     
-    // MARK: - Body
+    // --- body ---
     var body: some View {
         ZStack {
             Color.travelWhite
@@ -49,7 +49,7 @@ struct FiltrationView: View {
                 }
                 Spacer()
             }
-            .customNavigationBackButton()
+			.customNavigationBackButton(pop: pop)
             .padding(.horizontal, 16)
             .padding(.top, 16)
             
@@ -59,12 +59,16 @@ struct FiltrationView: View {
             }
             .padding(.bottom, 24)
         }
+		.onAppear {
+			selectedDepartFilters = manager.filter?.departFilter ?? []
+			selectedTransferFilter = manager.filter?.allowTransfers
+		}
     }
     
-    // MARK: - Private Views
+    // --- private views ---
     private var confirmButton: some View {
         Button(action: confirmAction) {
-            Text("Применить")
+            Text(.apply)
         }
         .buttonStyle(
             WideButtonStyle()
@@ -121,8 +125,8 @@ struct FiltrationView: View {
     private func confirmAction() {
         manager.filter = .init(
             departFilter: selectedDepartFilters,
-            transferFilter: selectedTransferFilter
+            allowTransfers: selectedTransferFilter
         )
-        coordinator.pop()
+		pop()
     }
 }

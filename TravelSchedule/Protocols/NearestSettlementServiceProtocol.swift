@@ -2,5 +2,5 @@ protocol NearestSettlementServiceProtocol {
     func getNearestCity(
         lat: Double,
         lng: Double
-    ) async throws -> NearestCityResponse
+	) async throws -> Result<NearestCityResponse, ErrorKind>
 }

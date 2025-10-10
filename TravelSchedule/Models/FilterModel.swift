@@ -1,4 +1,4 @@
-struct FilterModel {
+struct FilterModel: Equatable {
     let departFilter: Set<Filter.DepartTimeFilter>
-    let transferFilter: Bool?
+    let allowTransfers: Bool?
 }

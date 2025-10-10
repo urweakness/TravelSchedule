@@ -1,3 +1,3 @@
 protocol CopyrightServiceProtocol {
-    func getCopyright() async throws -> CopyrightResponse
+	func getCopyright() async throws -> Result<CopyrightResponse, ErrorKind>
 }

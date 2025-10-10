@@ -1,43 +1,41 @@
 import SwiftUI
 
-// MARK: - Tempororary implementation
-struct CarrierModel: Identifiable {
-    let id: UUID = UUID()
-    var logoURLString: String
-    var name: String
-    var transferInfo: String
-    var dateString: String
-    var startTime: String
-    var endTime: String
-    var tripTimeDelta: String
-}
-
-let stubCarrier = CarrierModel(
-    logoURLString: "https://yastat.net/s3/rasp/media/data/company/logo/thy_kopya.jpg",
-    name: "TK",
-    transferInfo: "С пересадкой в Костроме",
-    dateString: "2023-01-14T15:30:00+0000",
-    startTime: "22:30",
-    endTime: "08:15",
-    tripTimeDelta: "20 часов"
-)
-
 struct CarriersListView: View {
     
-    // MARK: - Private States
-    @State private var carriers: [CarrierModel] = [stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier, stubCarrier]
+    // --- private states ---
+	@State private var viewModel: CarrierListViewModel
     
-    // MARK: - Observed Objects
-    @ObservedObject var manager: TravelRoutingManager
+	// --- DI ---
+	let loadingState: LoadingState
+	let push: (Page) -> Void
+	let pop: () -> Void
     
-    // MARK: - Enviroments
-    @EnvironmentObject private var coordinator: Coordinator
-    
-    // MARK: - Private Constants
-    private let networkServicesManager = ServicesManager.shared
+    // --- private constants ---
     private let overscrollBottomPadding = CarrierListOverscroll().bottomPadding
+	
+	// --- internal init ---
+	init(
+		manager: TravelRoutingManager,
+		dataCoordinator: DataCoordinator,
+		push: @escaping (Page) -> Void,
+		pop: @escaping () -> Void
+	) {
+		self.loadingState = dataCoordinator.loader.loadingState
+		self.push = push
+		self.pop = pop
+
+		_viewModel = State(
+			initialValue: .init(
+				manager: manager,
+				dataCoordinator: dataCoordinator,
+				pushCarrier: {
+					push(.carrierInfo)
+				}
+			)
+		)
+	}
     
-    // MARK: - Body
+    // --- body ---
     var body: some View {
         ZStack {
             Color.travelWhite
@@ -45,23 +43,26 @@ struct CarriersListView: View {
             
             VStack(alignment: .leading, spacing: 16) {
                 titleView
-                ScrollView(.vertical){
-                    VStack(spacing: 8) {
-                        ForEach(carriers) { carrier in
-                            CarrierListCellView(carrier: carrier)
-                                .onTapGesture {
-                                    #warning("TODO: set carrier before pushing info about him")
-                                    manager.choosedCarrier = ""
-                                    coordinator.push(page: .carrierInfo)
-                                }
-                        }
-                    }
-                    .padding(.bottom, overscrollBottomPadding)
-                }
-                .scrollIndicators(.hidden)
+				
+				ZStack {
+					carriersListView
+						.opacity(loadingState == .idle ? 1 : 0)
+					
+					ZStack {
+						Spacer()
+						ProgressView()
+							.progressViewStyle(.circular)
+							.scaleEffect(2)
+							.transition(.blurReplace)
+							.transition(.scale)
+							.frame(maxWidth: .infinity)
+						Spacer()
+					}
+					.opacity(loadingState == .fetching ? 1 : 0)
+				}
             }
             .padding(.horizontal, 16)
-            .customNavigationBackButton()
+			.customNavigationBackButton(pop: pop)
             .navigationBarBackButtonHidden()
             
             VStack {
@@ -70,33 +71,79 @@ struct CarriersListView: View {
                     .padding(.bottom)
             }
         }
+		.animation(.default, value: loadingState)
+		.onChange(of: viewModel.manager.filter) {
+			viewModel.updateCarriers()
+		}
         .task {
-            Task {
-                await loadCarriers()
-            }
+			await loadCarriers()
         }
     }
     
-    // MARK: - Private Views
+    // --- private views ---
+	private var carriersListView: some View {
+		List(
+			Array(viewModel.filteredCarriers.enumerated()),
+			id: \.element.id
+		) { index, carrier in
+			CarrierListCellView(carrier: carrier)
+				.customListCellMods()
+				.onTapGesture {
+					viewModel.didTap(carrier)
+				}
+			// --- overscroll :) ---
+			if index == viewModel.filteredCarriers.count - 1 {
+				Color.clear
+					.customListCellMods()
+					.frame(height: overscrollBottomPadding)
+			}
+		}
+		.listStyle(.plain)
+		.scrollContentBackground(.hidden)
+		.padding(.horizontal, -16)
+		.scrollBounceBehavior(.basedOnSize)
+	}
     private var titleView: some View {
-        Text(manager.title)
+		Text(viewModel.title)
             .font(.bold24)
             .foregroundStyle(.travelBlack)
+			.truncationMode(.head)
     }
     
     private var nextButtonView: some View {
         Button(action: {
-            coordinator.push(page: .filtration)
+			push(.filtration)
         }) {
-            Text("Уточнить время")
+            Text(.checkTime)
         }
         .buttonStyle(
             WideButtonStyle()
         )
+		.disabled(loadingState != .idle)
     }
     
-    // MARK: - Private Methods
+    // --- private methods ---
     private func loadCarriers() async {
-        #warning("TODO: load carriers using (travelRoutingManager.filter)")
+		guard
+			let response = await viewModel.fetchScheduleBetweenStations()
+		else {
+			print("\n\(#function) No response from API\n")
+			return
+		}
+		
+		viewModel.parseResponse(response)
+		viewModel.updateCarriers()
     }
+}
+
+
+// MARK: - View Extensions
+// --- fileprivate list cell modifiers ---
+fileprivate extension View {
+	func customListCellMods() -> some View {
+		self
+			.listRowBackground(Color.clear)
+			.listRowSeparator(.hidden)
+			.listSectionSeparator(.hidden)
+	}
 }

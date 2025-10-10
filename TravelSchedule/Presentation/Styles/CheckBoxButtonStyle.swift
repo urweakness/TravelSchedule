@@ -2,10 +2,10 @@ import SwiftUI
 
 struct CheckBoxButtonStyle<V: View>: ButtonStyle {
     
-    // MARK: - Internal Constants
+    // --- DI ---
     let checkboxView: (() -> V)?
     
-    // MARK: - Body
+    // --- body ---
     func makeBody(configuration: Configuration) -> some View {
         HStack {
             configuration.label

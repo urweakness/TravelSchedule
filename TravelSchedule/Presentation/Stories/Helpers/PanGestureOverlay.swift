@@ -5,7 +5,7 @@ struct PanGestureOverlay: UIViewRepresentable {
 	var onChange: (CGFloat) -> Void
 	var onEnd: (CGFloat, CGFloat) -> Void
 	
-	// MARK: - View Life Cycles
+	// --- view life cycles ---
 	func makeUIView(context: Context) -> some UIView {
 		let view = UIView()
 		

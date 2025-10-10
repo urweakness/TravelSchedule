@@ -1,59 +1,135 @@
 import SwiftUI
 
+@MainActor
+@Observable
 final class Coordinator: ObservableObject {
-    @Published var path = NavigationPath()
-    @Published var selectedTab: Int = 0
-    @Published var fullScreenCover: FullScreenCover?
-	@Published private(set) var navigationTitle = ""
-    @Published private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
+    var path = NavigationPath()
+	var fullScreenCover: FullScreenCover?
+	private(set) var navigationTitle = ""
+    private(set) var navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode = .automatic
     
-    private let dependencies: AppDependencies
+    let dependencies: AppDependencies
     
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
+	
+	private func setNavigation(for page: Page) {
+		navigationTitle = page.navigationTitle
+		navigationTitleDisplayMode = page.navigationTitleDisplayMode
+	}
 }
 
 // MARK: - Coordinator Extensions
 
 // MARK: Internal Builders
 extension Coordinator {
+	
+	// --- private builder helpers ---
+	private func buildStoriesPreviewView() -> StoriesPreviewView {
+		StoriesPreviewView(
+			manager: dependencies.storiesManager,
+			present: present
+		)
+	}
+	
+	private func buildRoutingView() -> RoutingView {
+		RoutingView(
+			manager: dependencies.travelManager,
+			push: push
+		)
+	}
+	
+	private func buildMainView() -> MainView {
+		MainView(
+			manager: dependencies.travelManager,
+			storiesPreviewContent: buildStoriesPreviewView,
+			routingContent: buildRoutingView,
+			push: push
+		)
+	}
+	
+	private func buildSettingsView() -> SettingsView {
+		SettingsView(push: push)
+	}
+	
+	// --- internal builder for CoordinatorView ---
     @ViewBuilder @preconcurrency
     func build(page: Page) -> some View {
         switch page {
+			
         case .tabView:
-            TravelTabView()
+			TravelTabView(
+				manager: dependencies.appManager,
+				dataCoordinator: dependencies.dataCoordinator,
+				buildMainView: buildMainView,
+				buildSettingsView: buildSettingsView
+			)
             
         case .main:
-            MainView(manager: dependencies.travelManager)
+			buildMainView()
             
         case .routing:
-            RoutingView(manager: dependencies.travelManager)
+			buildRoutingView()
         
         case .settings:
-            SettingsView()
+			buildSettingsView()
             
         case .storiesPreview:
-            StoriesPreviewView()
-				.environment(dependencies.storiesManager)
+			buildStoriesPreviewView()
         
         case .townChoose:
-            TravelPointChooseView<Town>(manager: dependencies.travelManager)
+            TravelPointChooseView<Town>(
+				routingManager: dependencies.travelManager,
+				appManager: dependencies.appManager,
+				loadingState: dependencies.dataCoordinator.loader.loadingState,
+				push: push,
+				pop: pop,
+				popToRoot: popToRoot,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .stationChoose:
-            TravelPointChooseView<Station>(manager: dependencies.travelManager)
+            TravelPointChooseView<Station>(
+				routingManager: dependencies.travelManager,
+				appManager: dependencies.appManager,
+				loadingState: dependencies.dataCoordinator.loader.loadingState,
+				push: push,
+				pop: pop,
+				popToRoot: popToRoot,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .userAgreement:
-            UserAgreementView()
+			UserAgreementView(
+				pop: pop,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
             
         case .carriersChoose:
-            CarriersListView(manager: dependencies.travelManager)
+            CarriersListView(
+				manager: dependencies.travelManager,
+				dataCoordinator: dependencies.dataCoordinator,
+				push: push,
+				pop: pop
+			)
             
         case .filtration:
-            FiltrationView(manager: dependencies.travelManager)
+            FiltrationView(
+				manager: dependencies.travelManager,
+				pop: pop
+			)
             
         case .carrierInfo:
-            CarrierInfoView(manager: dependencies.travelManager)
+			CarrierInfoView(
+				carrier: dependencies.travelManager.choosedCarrier,
+				pop: pop,
+				navigationTitle: navigationTitle,
+				navigationTitleDisplayMode: navigationTitleDisplayMode
+			)
 		
         default:
             EmptyView()
@@ -64,11 +140,13 @@ extension Coordinator {
     func build(fullScreenCover: FullScreenCover) -> some View {
         switch fullScreenCover {
         case .story:
-			FullScreenStoriesView()
-				.environment(dependencies.storiesManager)
-            
-        case .error(let errorKind):
-            ErrorView(kind: errorKind)
+			FullScreenStoriesView(manager: dependencies.storiesManager)
+			
+		case .error(let kind):
+			ErrorView(
+				kind: kind,
+				onDismiss: dismissFullScreenCover
+			)
             
         default:
             EmptyView()
@@ -80,8 +158,7 @@ extension Coordinator {
 extension Coordinator {
     @preconcurrency
     func push(page: Page) {
-		navigationTitle = page.navigationTitle
-		navigationTitleDisplayMode = page.navigationTitleDisplayMode
+		setNavigation(for: page)
         path.append(page)
     }
     
@@ -99,7 +176,8 @@ extension Coordinator {
     }
     
     @preconcurrency
-    func pop() {
+	func pop() {
+		#warning("TODO: cant change navigation title on pop beacuse we cant get NavigationPath elements directly")
         path.removeLast()
     }
     

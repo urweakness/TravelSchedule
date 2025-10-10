@@ -5,6 +5,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 	let url: URL
 	@Binding var isLoading: Bool
 	var colorScheme: ColorScheme
+	var onProgress: (Double) -> Void = { _ in }
 	
 	func makeUIView(context: Context) -> some UIView {
 		let config = WKWebViewConfiguration()
@@ -14,7 +15,9 @@ struct WebViewRepresentable: UIViewRepresentable {
 		
 		let webView = WKWebView(frame: .zero, configuration: config)
 		
-		context.coordinator.observeProgress(webView)
+		webView.navigationDelegate = context.coordinator
+		context.coordinator.attach(to: webView)
+		
 		webView.load(URLRequest(url: url))
 		return webView
 	}
@@ -29,45 +32,114 @@ struct WebViewRepresentable: UIViewRepresentable {
 	}
 	
 	func makeCoordinator() -> Coordinator {
-		Coordinator(isLoading: $isLoading)
+		Coordinator(
+			isLoading: $isLoading,
+			onProgress: onProgress
+		)
 	}
 	
-	class Coordinator: NSObject {
+	class Coordinator: NSObject, WKNavigationDelegate {
 		@Binding var isLoading: Bool
+		let onProgress: (Double) -> Void
 		
 		weak var webView: WKWebView?
 		
+		private var isObservingProgress = false
+		
 		private var progressObservation: NSKeyValueObservation?
+		private let estimatedProgressKeyPath = "estimatedProgress"
 		
-		init(isLoading: Binding<Bool>) {
+		init(
+			isLoading: Binding<Bool>,
+			onProgress: @escaping (Double) -> Void
+		) {
 			self._isLoading = isLoading
+			self.onProgress = onProgress
 		}
-		
-		func observeProgress(_ webView: WKWebView) {
+
+		func attach(to webView: WKWebView) {
 			self.webView = webView
-			
-			progressObservation = webView
-				.observe(\.estimatedProgress, options: .new) { obsWebView, _ in
-					
-					let progress = obsWebView.estimatedProgress
-					
-					DispatchQueue.main.async { [weak self] in
-						if progress >= 0.99 {
-							self?.isLoading = false
-						} else {
-							self?.isLoading = true
-						}
-					}
-			}
+			guard !isObservingProgress else { return }
+			webView.addObserver(
+				self,
+				forKeyPath: #keyPath(WKWebView.estimatedProgress),
+				options: .new,
+				context: nil
+			)
+			isObservingProgress = true
 		}
 		
-		private func deinitObserver() {
-			progressObservation?.invalidate()
-			progressObservation = nil
+		@MainActor
+		@objc private func applyProgressNumber(_ number: NSNumber) {
+			let progress = number.doubleValue
+			onProgress(progress)
+			isLoading = progress < 0.999
+		}
+		
+		override func observeValue(
+			forKeyPath keyPath: String?,
+			of object: Any?,
+			change: [NSKeyValueChangeKey : Any]?,
+			context: UnsafeMutableRawPointer?
+		) {
+			guard
+				keyPath == estimatedProgressKeyPath
+			else {
+				super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+				return
+			}
+			
+			// --- берем значение из change, чтобы не читать @MainActor объект ---
+			let progress = (change?[.newKey] as? NSNumber)?.doubleValue ?? 0.0
+			
+			// --- главный поток без @Sendable ---
+			self.performSelector(
+				onMainThread: #selector(applyProgressNumber(_:)),
+				with: NSNumber(value: progress),
+				waitUntilDone: false
+			)
 		}
 		
 		deinit {
-			deinitObserver()
+			if
+				let webView,
+				isObservingProgress
+			{
+				webView
+					.removeObserver(
+						self,
+						forKeyPath: estimatedProgressKeyPath
+					)
+			}
+			isObservingProgress = false
+		}
+		
+		// --- WKNavigationDelegate ---
+		@MainActor
+		func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+			isLoading = true
+			onProgress(0.0)
+		}
+		
+		@MainActor
+		func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+			isLoading = true
+		}
+		
+		@MainActor
+		func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+			onProgress(1.0)
+			isLoading = false
+		}
+		
+		@MainActor
+		func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+			isLoading = false
+		}
+		
+		@MainActor
+		func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+			isLoading = false
 		}
 	}
 	
@@ -83,7 +155,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 					var style = document.createElement('style');
 					style.id = 'native-theme-style';
 		
-					// базовые правила — можно расширить
+					// basic rules — can extend
 					var darkCSS = `
 						html, body, * {
 							background-color: #1B1C22 !important;
@@ -108,10 +180,10 @@ struct WebViewRepresentable: UIViewRepresentable {
 					style.innerHTML = (theme === 'dark') ? darkCSS : lightCSS;
 					if (document.head) document.head.appendChild(style);
 		
-					// метка для проверки из native
+					// target to check from native
 					document.documentElement.setAttribute('data-native-theme', theme);
 		
-					// Подмена matchMedia чтобы сайт, проверяющий prefers-color-scheme, получил корректный ответ
+					// Replacing matchMedia, site that receives preferes-color-sceheme, receive corrent response
 					(function(origMatchMedia, currentTheme) {
 						window.matchMedia = function(query) {
 							if (query === '(prefers-color-scheme: dark)') {

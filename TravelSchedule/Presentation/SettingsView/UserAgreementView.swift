@@ -2,20 +2,22 @@ import SwiftUI
 
 struct UserAgreementView: View {
 	
-	// MARK: - Private States
+	// --- private states ---
 	@State private var isLoading = true
 	
-	// MARK: - DI States
-	@EnvironmentObject private var coordinator: Coordinator
+	// --- DI ---
+	let pop: () -> Void
+	let navigationTitle: String
+	let navigationTitleDisplayMode: NavigationBarItem.TitleDisplayMode
 	@Environment(\.colorScheme) private var colorScheme: ColorScheme
 	
-	// MARK: - Body
+	// --- body ---
     var body: some View {
 		ZStack {
 			Color.travelWhite
 				.ignoresSafeArea()
 			
-			if let url = URL(string: "https://yandex.ru/legal/practicum_offer") {
+			if let url = URL(string: GlobalConstants.userAgreementURLString) {
 				WebViewRepresentable(
 					url: url,
 					isLoading: $isLoading,
@@ -30,18 +32,14 @@ struct UserAgreementView: View {
 				}
 				
 			} else {
-				Text("Sorry, this document is currently unavailable.")
+				Text(.sorryThisDocumentIsCurrentlyUnavailable)
 					.font(.bold34)
 					.foregroundStyle(.travelBlack)
 			}
 		}
 		.animation(.spring(.bouncy), value: isLoading)
-		.navigationTitle(coordinator.navigationTitle)
-		.navigationBarTitleDisplayMode(coordinator.navigationTitleDisplayMode)
-		.customNavigationBackButton()
+		.navigationTitle(navigationTitle)
+		.navigationBarTitleDisplayMode(navigationTitleDisplayMode)
+		.customNavigationBackButton(pop: pop)
     }
-}
-
-#Preview {
-    UserAgreementView()
 }

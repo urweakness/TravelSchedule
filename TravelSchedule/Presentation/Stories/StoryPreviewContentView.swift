@@ -1,16 +1,11 @@
 import SwiftUI
 
-struct StoryPreviewView: View {
+struct StoryPreviewContentView: View {
     
-	// MARK: - Private Constants
-    private let story: StoryModel
-    
-	// MARK: - Internal Init
-	init(story: StoryModel) {
-		self.story = story
-	}
+	// --- DI ---
+    let story: StoryModel
 	
-	// MARK: - Body
+	// --- body ---
     var body: some View {
         Image(story.previewImageResource)
             .overlay(alignment: .bottom) {
@@ -21,7 +16,7 @@ struct StoryPreviewView: View {
 			.opacity(story.isCheckedOut ? 0.5 : 1)
     }
     
-	// MARK: - Private Views
+	// --- private subviews ---
     @ViewBuilder
     private var titleCover: some View {
         let title = story.storyParts.first?.title ?? "FAILED TO PARSE STORY TITLE"

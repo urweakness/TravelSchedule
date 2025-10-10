@@ -7,7 +7,7 @@ struct LazyHScrollView<Content: View>: View {
 	var isScrolling: Binding<Bool>
 	
 	// --- internal constants ---
-	let fakeCurrentStoryIndex: Int
+	let storyIndex: Int
 	let storyDidShow: (Int) -> Void
 	let animateContentTransition: Bool
 	let handleTouch: (CGFloat, CGFloat) -> Void
@@ -58,11 +58,23 @@ struct LazyHScrollView<Content: View>: View {
 				.applyScrollSettings()
 				.scrollDisabled(yDragOffset > 0)
 				.coordinateSpace(.named(coordinateSpaceName))
-				.onChange(of: fakeCurrentStoryIndex) { _, newValue in
-					fakeIndexDidChange(
+				.onChange(of: storyIndex) { _, newValue in
+					storyIndexDidChange(
 						to: newValue,
 						proxy: proxy
 					)
+				}
+				.accessibilityIdentifier(
+					AccessibilityIdentifier.storiesScroll.rawValue
+				)
+				// --- scroll to current on appear ---
+				.onAppear {
+					DispatchQueue.main.async {
+						storyIndexDidChange(
+							to: storyIndex,
+							proxy: proxy
+						)
+					}
 				}
 			}
 			.offset(y: yDragOffset)
@@ -72,9 +84,7 @@ struct LazyHScrollView<Content: View>: View {
 }
 
 // MARK: - LazyHScrollView Extensions
-// MARK: Private
-
-// --- helpers ---
+// --- private helpers ---
 private extension LazyHScrollView {
 	func scrollPageDidChange(to page: Int) {
 		DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -82,7 +92,7 @@ private extension LazyHScrollView {
 		}
 	}
 	
-	func fakeIndexDidChange(
+	func storyIndexDidChange(
 		to index: Int,
 		proxy: ScrollViewProxy
 	) {
@@ -93,9 +103,7 @@ private extension LazyHScrollView {
 }
 
 // MARK: - View Extensions
-// MARK: Private
-
-// --- incapsulation ---
+// --- private incapsulation ---
 private extension View {
 	func applyScrollSettings() -> some View {
 		self

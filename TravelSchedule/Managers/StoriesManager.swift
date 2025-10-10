@@ -10,8 +10,17 @@ final class StoriesManager {
         self.stories = stories
     }
     
-	// MARK: - Centralized updating of an array of stories
-    func apply(updatedStories: [StoryModel]) {
-        self.stories = updatedStories
-    }
+	func setStoryPartCheckedOutStatus(
+		currentStoryIndex: Int,
+		currentStoryPartIndex: Int,
+	) {
+		guard
+			let storyPart =
+				stories[safe: currentStoryIndex]?
+					.storyParts[safe: currentStoryPartIndex]
+		else { return }
+		
+		stories[currentStoryIndex]
+			.storyParts[currentStoryPartIndex] = storyPart.invertedCheckedOutStatus(to: true)
+	}
 }

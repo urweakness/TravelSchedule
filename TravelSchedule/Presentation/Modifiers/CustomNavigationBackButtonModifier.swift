@@ -1,22 +1,25 @@
 import SwiftUI
 
-struct CustomNavigationBackButton: ViewModifier {
+struct CustomNavigationBackButtonModifier: ViewModifier {
     
-    @EnvironmentObject var coordinator: Coordinator
+	// --- DI ---
+	let pop: () -> Void
     
+	// --- body ---
     func body(content: Content) -> some View {
         content
             .navigationBarBackButtonHidden()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
-                        coordinator.pop()
-                    }) {
+                    Button(action: pop) {
                         Image(systemName: "chevron.left")
                             .renderingMode(.template)
                             .foregroundStyle(.travelBlack)
                             .font(.bold17)
                     }
+					.accessibilityIdentifier(
+						AccessibilityIdentifier.backButton.rawValue
+					)
                 }
             }
     }

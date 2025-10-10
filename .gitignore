@@ -46,6 +46,7 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+*.yaml
 
 # CocoaPods
 # We recommend against adding the Pods directory to your .gitignore. However
@@ -87,6 +88,7 @@ iOSInjectionProject/
 ## Xcode 8 and earlier
 
 ### Xcode Patch ###
+*.pbxpoj
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/

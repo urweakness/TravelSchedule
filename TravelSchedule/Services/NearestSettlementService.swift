@@ -1,20 +1,22 @@
-final class NearestSettlementService: NearestSettlementServiceProtocol {
+import Foundation
+
+final actor NearestSettlementService: NearestSettlementServiceProtocol {
 	
-	// MARK: - Private Constants
-    private let client: Client
-    private let apiKey: String
-    
-	// MARK: - Internal Init
-    init(client: Client, apiKey: String) {
-        self.client = client
-        self.apiKey = apiKey
-    }
-    
-	// MARK: - Internal Methods
+	// --- private constants ---
+	private let client: Client
+	private let apiKey: String
+	
+	// --- internal init ---
+	init(client: Client, apiKey: String) {
+		self.client = client
+		self.apiKey = apiKey
+	}
+	
+	// --- internal methods ---
     func getNearestCity(
         lat: Double,
         lng: Double
-    ) async throws -> NearestCityResponse {
+	) async throws -> Result<NearestCityResponse, ErrorKind> {
         let response = try await client.getNearestCity(
             query: .init(
                 apikey: apiKey,
@@ -23,6 +25,28 @@ final class NearestSettlementService: NearestSettlementServiceProtocol {
             )
         )
         
-        return try response.ok.body.json
+		switch response {
+		case .ok(let content):
+			return .success(try content.body.json)
+		case .undocumented(let statusCode, let description):
+			switch statusCode {
+			case 400...499:
+				return .failure(.noInternet)
+			case 500...599:
+				return .failure(.serverError)
+			default:
+				return .failure(
+					.unknown(
+						NSError(
+							domain: "StationListService",
+							code: 0,
+							userInfo: ["description": description])
+					)
+				)
+			}
+			
+		@unknown default:
+			throw URLError(.badServerResponse)
+		}
     }
 }

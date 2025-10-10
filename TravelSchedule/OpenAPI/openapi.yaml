@@ -4,7 +4,7 @@ info:
   description: API Яндекс.Расписаний
   version: 3.0.0
 servers:
-- url: https://api.rasp.yandex.net
+- url: https://api.rasp.yandex-net.ru
 tags:
 - name: Список ближайших станций
   description: Список ближайших станций
@@ -189,6 +189,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Segments'
+
   /v3.0/schedule/:
     get:
       tags:
@@ -457,9 +458,10 @@ paths:
             text/html:
               schema:
                 $ref: '#/components/schemas/AllStationsResponse'
+
 components:
   schemas:
-  
+
     Format:
       type: string
       enum:
@@ -518,13 +520,47 @@ components:
           items:
             $ref: '#/components/schemas/Station'
             
+    Search:
+      type: object
+      properties:
+          from:
+            $ref: '#/components/schemas/SearchFromTo'
+          to:
+            $ref: '#/components/schemas/SearchFromTo'
+          date:
+            type: string
+            nullable: true
+    
+    SearchFromTo:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        short_title:
+          type: string
+          nullable: true
+        popular_title:
+          type: string
+          nullable: true
+        code:
+          type: string
+#        station_type:
+#          $ref: '#/components/schemas/StationType'
+#        station_type_name:
+#          type: string
+#        transport_type:
+#          $ref: '#/components/schemas/TransportType'
+        
+    
     Segments:
       type: object
       properties:
+        
+        search:
+          $ref: '#/components/schemas/Search'
       
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-          
         segments:
           type: array
           items:
@@ -534,67 +570,131 @@ components:
           type: array
           description: Список интервальных рейсов, движение по которым идет регулярно, но без определенного расписания.
           items:
-            type: object
-            properties:
-            
-              from:
-                $ref: '#/components/schemas/Station'
+            $ref: '#/components/schemas/IntervalSegment'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    
+    IntervalSegment:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Station'
                 
-              to:
-                $ref: '#/components/schemas/Station'
+        to:
+          $ref: '#/components/schemas/Station'
                 
-              thread:
-                $ref: '#/components/schemas/Thread'
+        thread:
+          $ref: '#/components/schemas/Thread'
                 
-              interval:
-                type: object
-                properties:
-                
-                  density:
-                    type: string
-                    description: Периодичность рейсов, например, "автобус раз в 10-15 минут".
+        interval:
+          type: object
+          properties:
+              
+            density:
+              type: string
+              description: Периодичность рейсов, например, "автобус раз в 10-15 минут".
                     
-                  begin_time:
-                    type: string
-#                    format: date-time
-                    description: Время начала движения по нитке.
+            begin_time:
+              type: string
+              format: date-time
+              description: Время начала движения по нитке.
                     
-                  end_time:
-                    type: string
-#                    format: date-time
-                    description: Время окончания движения по нитке.
+            end_time:
+              type: string
+              format: date-time
+              description: Время окончания движения по нитке.
                     
-              duration:
-                type: integer
-                description: Длительность рейса в секундах.
+            duration:
+              type: integer
+              description: Длительность рейса в секундах.
                 
-              has_transfers:
-                type: boolean
-                description: Признак наличия пересадок по маршруту.
+            has_transfers:
+              type: boolean
+              description: Признак наличия пересадок по маршруту.
                 
-              tickets_info:
-                $ref: '#/components/schemas/TicketsInfo'
-                
+            tickets_info:
+              $ref: '#/components/schemas/TicketsInfo'
+    
+    SegmentFromTo:
+      type: object
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        station_type:
+          type: string
+        station_type_name:
+          type: string
+        popular_title:
+          type: string
+        short_title:
+          type: string
+        transport_type:
+          type: string
+        type:
+          type: string
+
+    Transfer:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        short_title:
+          type: string
+        popular_title:
+          type: string
+        code:
+          type: string
+
     Segment:
       type: object
       properties:
       
         from:
-          $ref: '#/components/schemas/Station'
+          $ref: '#/components/schemas/SegmentFromTo'
           
         to:
-          $ref: '#/components/schemas/Station'
+          $ref: '#/components/schemas/SegmentFromTo'
+          
+        has_transfers:
+          type: boolean
+          description: Признак наличия пересадок по маршруту.
+
+        transfers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transfer'
+
+        stops:
+          type: string
+        
+        departure_platform:
+          type: string
+          
+        arrival_platform:
+          type: string
+          
+        departure_terminal:
+          type: string
+          
+        arrival_terminal:
+          type: string
           
         departure:
           type: string
-#          format: date-time
-          description: Время отправления
+          description: 00:00:00
           
         arrival:
           type: string
-#          format: date-time
-          description: Время прибытия
+          description: 00:00:00
           
+        start_date:
+          type: string
+          description: 2025-10-06
+        
         thread:
           $ref: '#/components/schemas/Thread'
           
@@ -756,6 +856,9 @@ components:
         title:
           type: string
           
+        short_title:
+          type: string
+          
         number:
           type: string
           
@@ -763,6 +866,25 @@ components:
           $ref: '#/components/schemas/Carrier'
           
         transport_type:
+          type: string
+          
+        transport_subtype:
+          type: object
+          properties:
+            title:
+              type: string
+              nullable: true
+            code:
+              type: integer
+              nullable: true
+            color:
+              type: string
+              nullable: true
+              
+        express_type:
+          type: string
+              
+        thread_method_link:
           type: string
           
         vehicle:

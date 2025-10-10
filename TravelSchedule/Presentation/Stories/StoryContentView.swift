@@ -13,7 +13,10 @@ struct StoryContentView: View {
 		if let storyPart = story.storyParts[safe: currentStoryPartIndex] {
 			StoryPartView(storyPart: storyPart)
 				.overlay(alignment: .topLeading) {
-					VStack(alignment: .trailing, spacing: 16) {
+					VStack(
+						alignment: .trailing,
+						spacing: 16
+					) {
 						progressView
 							.frame(height: .progressBarHeight)
 							.padding(.horizontal, 8)

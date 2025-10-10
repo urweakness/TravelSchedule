@@ -1,13 +1,12 @@
 import Foundation
 
 struct DataLoader {
-    func downloadData(url: URL) async -> Data? {
+	func downloadData(url: URL) async throws -> Data {
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            return data
+            async let (data, _) = URLSession.shared.data(from: url)
+            return try await data
         } catch {
-            print(error.localizedDescription)
-            return nil
+            throw NSError(domain: "DataLoader", code: 0, userInfo: nil)
         }
     }
 }
