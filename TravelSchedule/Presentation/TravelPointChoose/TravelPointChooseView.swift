@@ -45,20 +45,26 @@ struct TravelPointChooseView<D: TravelPoint>: View {
         VStack(spacing: 16) {
             searchFieldView
             
-			if loadingState == .idle {
-				if viewModel.filteredObjects.isEmpty {
-					emptyDestinationsView
-						.transition(.opacity)
-				} else {
-					destinationsView
+			ZStack {
+				Group {
+					if viewModel.filteredObjects.isEmpty {
+						emptyDestinationsView
+							.transition(.opacity)
+					} else {
+						destinationsView
+					}
 				}
-			} else {
-				Spacer()
-				ProgressView()
-					.scaleEffect(2)
-					.progressViewStyle(.circular)
-					.transition(.blurReplace)
-					.transition(.scale)
+				.opacity(loadingState == .idle ? 1 : 0)
+				
+				Group {
+					Spacer()
+					ProgressView()
+						.scaleEffect(2)
+						.progressViewStyle(.circular)
+						.transition(.blurReplace)
+						.transition(.scale)
+				}
+				.opacity(loadingState == .fetching ? 1 : 0)
 			}
             
             Spacer()

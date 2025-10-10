@@ -43,18 +43,22 @@ struct CarriersListView: View {
             
             VStack(alignment: .leading, spacing: 16) {
                 titleView
-				if loadingState == .idle {
+				
+				ZStack {
 					carriersListView
-						.transition(.opacity)
-				} else {
-					Spacer()
-					ProgressView()
-						.progressViewStyle(.circular)
-						.scaleEffect(2)
-						.transition(.blurReplace)
-						.transition(.scale)
-						.frame(maxWidth: .infinity)
-					Spacer()
+						.opacity(loadingState == .idle ? 1 : 0)
+					
+					ZStack {
+						Spacer()
+						ProgressView()
+							.progressViewStyle(.circular)
+							.scaleEffect(2)
+							.transition(.blurReplace)
+							.transition(.scale)
+							.frame(maxWidth: .infinity)
+						Spacer()
+					}
+					.opacity(loadingState == .fetching ? 1 : 0)
 				}
             }
             .padding(.horizontal, 16)
@@ -127,7 +131,7 @@ struct CarriersListView: View {
 			return
 		}
 		
-		await viewModel.parseResponse(response)
+		viewModel.parseResponse(response)
 		viewModel.updateCarriers()
     }
 }
