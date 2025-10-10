@@ -112,18 +112,11 @@ private extension StoriesViewModel {
 	}
 	
 	func progressForCurrentStoryProgress(for story: StoryModel) -> CGFloat {
-		let count = max(1, story.storyParts.count) // --- safe ---
-		let partIndex = currentStoryPartIndex
-		let partProgress = timer.progress
-		var result: CGFloat = 0
-		for i in 0..<count {
-			if i < partIndex {
-				result += 1
-			} else if i == partIndex {
-				result += partProgress
-			}
-		}
-		return result / CGFloat(count)
+		let totalParts = max(1, story.storyParts.count) // safe
+		let completedProgress = CGFloat(
+			min(currentStoryPartIndex, totalParts)
+		) + timer.progress
+		return completedProgress / CGFloat(totalParts)
 	}
 }
 
